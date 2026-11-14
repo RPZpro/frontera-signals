@@ -18,7 +18,7 @@ FIX = Path(__file__).parent / "fixtures"
 
 
 def det(lat, lon, when="2024-08-15 10:00", sensor="MODIS", frp=10.0, region="R1"):
-    return {"region_id": region, "sensor": sensor, "latitude": lat, "longitude": lon,
+    return {"region_id": region, "sensor": sensor.split("_")[0], "series": sensor, "latitude": lat, "longitude": lon,
             "acq_datetime_utc": pd.Timestamp(when, tz="UTC"), "frp_mw": frp}
 
 
@@ -144,7 +144,7 @@ def test_detection_outside_declared_coverage_raises():
 
 
 def test_undeclared_sensor_or_region_raises():
-    with pytest.raises(ValueError, match="without declared coverage"):
+    with pytest.raises(ValueError, match="series without declared coverage"):
         monthly_activity(frame(det(32.5, -116.0, sensor="VIIRS")), ["R1"], COV)
     with pytest.raises(ValueError, match="undeclared regions"):
         monthly_activity(frame(det(32.5, -116.0, region="X")), ["R1"], COV)
@@ -157,6 +157,14 @@ def test_month_boundary_uses_utc():
 
 
 # ---------------------------------------------------------------- 7. sensor separation
+def test_viirs_satellites_are_separate_series():
+    cov = {"VIIRS_SNPP": COV["MODIS"], "VIIRS_NOAA20": COV["MODIS"]}
+    d = frame(det(32.5, -116.0, sensor="VIIRS_SNPP"), det(32.5, -116.0, sensor="VIIRS_NOAA20"))
+    aug = monthly_activity(d, ["R1"], cov).query("month == '2024-08'")
+    assert list(aug["series"]) == ["VIIRS_NOAA20", "VIIRS_SNPP"]
+    assert list(aug["sensor"]) == ["VIIRS", "VIIRS"] and list(aug["hotspot_count"]) == [1, 1]
+
+
 def test_sensors_never_summed():
     cov = {"MODIS": COV["MODIS"], "VIIRS": COV["MODIS"]}
     d = frame(det(32.5, -116.0), *[det(32.5, -116.0, sensor="VIIRS")] * 4)
@@ -173,10 +181,21 @@ def test_end_to_end_real_fixtures(bcn):
         df, _ = load_firms_csv(FIX / f)
         frames.append(filter_to_regions(df, bcn)[0])
     d = pd.concat(frames, ignore_index=True)
-    cov = {"MODIS": ("2026-11-07", "2026-11-13"), "VIIRS": ("2026-11-07", "2026-11-13")}
+    cov = {"MODIS": ("2026-11-07", "2026-11-13"), "VIIRS_NOAA20": ("2026-11-07", "2026-11-13")}
     m1 = monthly_activity(d, ["MX-BCN"], cov)
     m2 = monthly_activity(d, ["MX-BCN"], cov)
     pd.testing.assert_frame_equal(m1, m2)  # 9. reproducible
     assert len(m1) == 2 and set(m1["quality"]) == {"partial_coverage"}
     assert m1["hotspot_count"].sum() == len(d)
     assert (m1["active_cells"] <= m1["hotspot_count"]).all()
+
+
+# ---------------------------------------------------------------- runner helpers
+def test_runner_year_and_coverage():
+    from fire_pipeline.run_monthly import _coverage, _year_of
+    assert _year_of(Path("viirs-snpp_2023_Mexico.csv")) == 2023
+    with pytest.raises(ValueError):
+        _year_of(Path("fire_archive.csv"))
+    assert _coverage({"MODIS": [2021, 2020]}) == {"MODIS": ("2020-01-01", "2021-12-31")}
+    with pytest.raises(ValueError, match="non-contiguous"):
+        _coverage({"MODIS": [2020, 2022]})

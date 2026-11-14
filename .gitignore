@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 db.sqlite3
 .env
+# Raw NASA FIRMS inputs (~300 MB, public; see data/raw/SOURCES.md)
+data/raw/**/*.csv
+# Regenerable from raw with python -m fire_pipeline.run_monthly
+data/processed/detections_*.csv

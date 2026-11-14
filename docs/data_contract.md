@@ -1,7 +1,8 @@
 # Data contract — Fire Seasons pipeline
 
 Owner: Science & Engineering (Toño). Consumer: UI/Integration (Ricardo).
-Status: **v0.2 draft**. Input, loader, polygon filtering and the monthly table are implemented. The frontend
+Status: **v0.3 draft**. Input, loader, polygon filtering and the monthly table are implemented and have been
+run on real 2020–2025 data (`python -m fire_pipeline.run_monthly`, outputs in `data/processed/`). The frontend
 outputs below are a proposal for Ricardo to review before implementation.
 
 ## 1. Inputs (NASA FIRMS CSV)
@@ -28,7 +29,7 @@ rejects mixed or unknown files.
 Produced by `fire_pipeline.load_firms_csv`. Full definitions are in
 `fire_pipeline/schemas.py::DETECTION_COLUMNS`. Each column is tagged raw or derived.
 
-`sensor, platform, satellite_code, product, version, is_nrt, latitude, longitude,
+`sensor, platform, series, collection, product, satellite_code, version, is_nrt, latitude, longitude,
 acq_datetime_utc, scan, track, bright_primary_k, bright_secondary_k, frp_mw,
 confidence_raw, confidence_pct, confidence_class, daynight, fire_type, source_file`
 
@@ -48,11 +49,18 @@ Default region: `MX-BCN` (see `data/boundaries/SOURCES.md`).
 
 ## 4. Monthly table (implemented, `fire_pipeline.aggregate.monthly_activity`)
 
-One row per region x sensor x UTC month. MODIS and VIIRS are never summed.
+One row per region x **series** x UTC month. Series: `MODIS` (Terra+Aqua combined, as in
+MCD14ML), `VIIRS_SNPP` and `VIIRS_NOAA20`. Series are never summed: SNPP and NOAA-20 see
+the same fires about 50 min apart, so adding them would double count.
+
+By default only FIRMS `type = 0` (presumed vegetation fire) is counted. Static
+industrial sources (`type = 2`, for example the Rosarito power plant) and offshore
+detections (`type = 3`) are excluded from the monthly table but kept in the detections file.
+The counts that were excluded are listed in `run_report.json`.
 
 | Column | Kind | Unit | Meaning |
 |---|---|---|---|
-| region_id, sensor, month | key | | `month` = `YYYY-MM` (UTC) |
+| region_id, series, sensor, month | key | | `month` = `YYYY-MM` (UTC) |
 | days_in_month, days_covered, coverage_fraction | coverage | days | from **declared** download range |
 | quality | status | | `ok` / `partial_coverage` / `no_data` |
 | hotspot_count | raw | detections | original count, never scaled |

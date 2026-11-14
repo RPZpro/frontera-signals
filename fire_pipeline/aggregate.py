@@ -1,4 +1,7 @@
-"""Monthly activity series per region x sensor (harmonization Stages 1 and 2).
+"""Monthly activity series per region x series (harmonization Stages 1 and 2).
+
+A *series* is MODIS (Terra+Aqua) or one VIIRS satellite (VIIRS_SNPP,
+VIIRS_NOAA20, ...). See ``schemas.SERIES``.
 
 Key rule: zero vs null
 ----------------------
@@ -33,7 +36,7 @@ METRICS: dict[str, tuple[str, str | None]] = {
 }
 
 MONTHLY_COLUMNS = (
-    "region_id", "sensor", "month", "days_in_month", "days_covered",
+    "region_id", "series", "sensor", "month", "days_in_month", "days_covered",
     "coverage_fraction", "quality", *METRICS,
 )
 
@@ -56,11 +59,11 @@ def monthly_activity(
     ----------
     detections : output of ``filter_to_regions`` (must have ``region_id``).
     region_ids : every region that must appear, including ones with no detections.
-    coverage : {sensor: ("YYYY-MM-DD", "YYYY-MM-DD")}, the inclusive UTC date
-        range the input files cover for that sensor.
+    coverage : {series: ("YYYY-MM-DD", "YYYY-MM-DD")}, the inclusive UTC date
+        range the input files cover for that series.
     """
     if not coverage:
-        raise ValueError("coverage must declare at least one sensor")
+        raise ValueError("coverage must declare at least one series")
     cov = {s.upper(): (pd.Timestamp(a), pd.Timestamp(b)) for s, (a, b) in coverage.items()}
     for s, (a, b) in cov.items():
         if b < a:
@@ -68,16 +71,16 @@ def monthly_activity(
 
     region_ids = [str(r) for r in region_ids]
     det = detections
-    unknown_sensor = set(det["sensor"]) - set(cov)
-    if unknown_sensor:
-        raise ValueError(f"detections for sensors without declared coverage: {unknown_sensor}")
+    unknown_series = set(det["series"]) - set(cov)
+    if unknown_series:
+        raise ValueError(f"detections for series without declared coverage: {unknown_series}")
     unknown_region = set(det["region_id"]) - set(region_ids)
     if unknown_region:
         raise ValueError(f"detections for undeclared regions: {unknown_region}")
 
     day = det["acq_datetime_utc"].dt.strftime("%Y-%m-%d")
     for s, (a, b) in cov.items():
-        d = pd.to_datetime(day[det["sensor"] == s])
+        d = pd.to_datetime(day[det["series"] == s])
         if len(d) and (d.min() < a or d.max() > b):
             raise ValueError(
                 f"{s} detections span {d.min().date()}..{d.max().date()}, "
@@ -86,11 +89,11 @@ def monthly_activity(
 
     months = pd.period_range(min(a for a, _ in cov.values()),
                              max(b for _, b in cov.values()), freq="M")
-    sensors = sorted(cov)
+    series = sorted(cov)
     rows = []
-    for r, s, m in itertools.product(region_ids, sensors, months):
+    for r, s, m in itertools.product(region_ids, series, months):
         covered = _coverage_days(m, *cov[s])
-        rows.append({"region_id": r, "sensor": s, "month": str(m),
+        rows.append({"region_id": r, "series": s, "sensor": s.split("_")[0], "month": str(m),
                      "days_in_month": m.days_in_month, "days_covered": covered})
     sk = pd.DataFrame(rows)
     sk["coverage_fraction"] = sk["days_covered"] / sk["days_in_month"]
@@ -102,13 +105,13 @@ def monthly_activity(
         g = assign_cells(det, cell_m)
         g["month"] = g["acq_datetime_utc"].dt.strftime("%Y-%m")
         g["cell_day"] = g["cell_id"] + "@" + day
-        agg = (g.groupby(["region_id", "sensor", "month"])
-                .agg(hotspot_count=("sensor", "size"),
+        agg = (g.groupby(["region_id", "series", "month"])
+                .agg(hotspot_count=("series", "size"),
                      frp_sum_mw=("frp_mw", "sum"),
                      active_cells=("cell_id", "nunique"),
                      active_cell_days=("cell_day", "nunique"))
                 .reset_index())
-        out = sk.merge(agg, on=["region_id", "sensor", "month"], how="left")
+        out = sk.merge(agg, on=["region_id", "series", "month"], how="left")
     else:
         out = sk.assign(**{m: pd.NA for m in METRICS})
 
@@ -119,5 +122,5 @@ def monthly_activity(
                          .where(has_data).round(3))
 
     return (out[list(MONTHLY_COLUMNS)]
-            .sort_values(["region_id", "sensor", "month"])
+            .sort_values(["region_id", "series", "month"])
             .reset_index(drop=True))

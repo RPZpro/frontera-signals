@@ -66,6 +66,11 @@ def filter_to_regions(
         raise RegionError("regions GeoDataFrame has no CRS")
     regions = regions.to_crs(WGS84)
 
+    # Exact pre-filter: a point outside the regions' bounding box cannot intersect them.
+    x0, y0, x1, y1 = regions.total_bounds
+    detections = detections[detections["longitude"].between(x0, x1)
+                            & detections["latitude"].between(y0, y1)]
+
     pts = gpd.GeoDataFrame(
         detections.reset_index(drop=True),
         geometry=gpd.points_from_xy(detections["longitude"], detections["latitude"]),

@@ -40,6 +40,7 @@ class ValidationReport:
     dropped: dict[str, int] = field(default_factory=dict)
     duplicates_removed: int = 0
     versions: list[str] = field(default_factory=list)
+    collections: list[str] = field(default_factory=list)
     platforms: list[str] = field(default_factory=list)
     date_min: str | None = None
     date_max: str | None = None
@@ -173,9 +174,13 @@ def load_firms_csv(
     dn = df["daynight"].str.strip().str.upper()
     flag(~dn.isin(["D", "N"]), "invalid_daynight")
 
-    # 6. version present
+    # 6. version -> collection (unknown versions are rejected, not guessed)
     version = df["version"].str.strip()
-    flag(version.isna() | (version == ""), "missing_version")
+    v = version.str.upper().str.replace("NRT", "", regex=False).str.strip()
+    collection = pd.Series(pd.NA, index=df.index, dtype="str")
+    for pattern, label in S.COLLECTION_PATTERNS[detected]:
+        collection = collection.mask(v.str.match(pattern, na=False), label)
+    flag(collection.isna(), "unrecognised_version")
 
     # 7. optional archive `type`
     if "type" in df.columns:
@@ -192,7 +197,9 @@ def load_firms_csv(
         "sensor": detected,
         "platform": platform,
         "satellite_code": sat,
-        "product": S.PRODUCT[detected],
+        "series": platform.map(S.SERIES[detected]),
+        "collection": collection,
+        "product": platform.map(S.PRODUCT_CODE) + " " + collection,
         "version": version,
         "is_nrt": version.str.upper().str.endswith("NRT"),
         "latitude": df["latitude"],
@@ -218,12 +225,14 @@ def load_firms_csv(
 
     out = (out.sort_values(["acq_datetime_utc", "latitude", "longitude"], kind="stable")
               .reset_index(drop=True)
-              .astype({"sensor": "str", "platform": "str", "product": "str",
+              .astype({"sensor": "str", "platform": "str", "series": "str",
+                       "collection": "str", "product": "str",
                        "is_nrt": "bool", "confidence_class": "str"}))
     out = out[list(S.DETECTION_COLUMN_ORDER)]
 
     report.rows_valid = len(out)
     report.versions = sorted(out["version"].unique().tolist())
+    report.collections = sorted(out["collection"].unique().tolist())
     report.platforms = sorted(out["platform"].unique().tolist())
     if len(out):
         report.date_min = out["acq_datetime_utc"].min().isoformat()

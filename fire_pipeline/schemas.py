@@ -35,10 +35,28 @@ PLATFORMS: dict[str, dict[str, str]] = {
     },
 }
 
-# Product label written to every output row (provenance).
-PRODUCT: dict[str, str] = {
-    MODIS: "MODIS Collection 6.1 Active Fire (MCD14 / FIRMS)",
-    VIIRS: "VIIRS 375 m Active Fire (VNP14IMG / VJ114IMG / FIRMS)",
+# FIRMS `version` -> product collection. Patterns are anchored, so an unknown
+# version is rejected instead of being assigned to the wrong collection.
+#   MODIS: "6.03" / "6.0NRT" = C6.0 ; "61.03" / "6.1" / "6.1NRT" = C6.1
+#   VIIRS: "2" / "2.0NRT" = C2 ; "1" / "1.0NRT" = C1
+COLLECTION_PATTERNS: dict[str, list[tuple[str, str]]] = {
+    MODIS: [(r"^6(\.0\d*)?$", "C6.0"), (r"^(6\.1\d*|61(\.\d+)?)$", "C6.1")],
+    VIIRS: [(r"^1(\.\d+)?$", "C1"), (r"^2(\.\d+)?$", "C2")],
+}
+
+# Analysis series. MODIS Terra and Aqua form one series, as in the standard
+# combined MODIS fire record (MCD14ML). Each VIIRS satellite is its own series,
+# because SNPP and NOAA-20 observe the same fires about 50 min apart and summing
+# them would double count.
+SERIES: dict[str, dict[str, str]] = {
+    MODIS: {"Terra": "MODIS", "Aqua": "MODIS"},
+    VIIRS: {"Suomi NPP": "VIIRS_SNPP", "NOAA-20": "VIIRS_NOAA20", "NOAA-21": "VIIRS_NOAA21"},
+}
+
+# Product short names by platform (provenance).
+PRODUCT_CODE: dict[str, str] = {
+    "Terra": "MOD14", "Aqua": "MYD14",
+    "Suomi NPP": "VNP14IMG", "NOAA-20": "VJ114IMG", "NOAA-21": "VJ214IMG",
 }
 
 NOMINAL_RESOLUTION_M: dict[str, int] = {MODIS: 1000, VIIRS: 375}
@@ -116,7 +134,10 @@ DETECTION_COLUMNS: dict[str, tuple[str, str, str | None, str]] = {
     "sensor": ("str", "raw", None, "MODIS or VIIRS"),
     "platform": ("str", "derived", None, "Terra, Aqua, Suomi NPP, NOAA-20, NOAA-21"),
     "satellite_code": ("str", "raw", None, "FIRMS `satellite` field as distributed"),
-    "product": ("str", "derived", None, "Product family label"),
+    "series": ("str", "derived", None,
+               "Analysis series: MODIS (Terra+Aqua), VIIRS_SNPP, VIIRS_NOAA20, VIIRS_NOAA21"),
+    "collection": ("str", "derived", None, "Product collection from `version`: C6.0, C6.1, C1, C2"),
+    "product": ("str", "derived", None, "Product short name + collection, e.g. VNP14IMG C2"),
     "version": ("str", "raw", None, "FIRMS `version`, e.g. 6.1NRT, 6.1, 2.0NRT"),
     "is_nrt": ("bool", "derived", None, "True if version ends in NRT"),
     "latitude": ("float64", "raw", "degrees_north", "Pixel centre, WGS84"),
