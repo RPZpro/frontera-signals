@@ -18,6 +18,7 @@ web/
     lib/
       contract.ts          TypeScript mirror of the data contract outputs
       data.ts              loading, indexing, colour-step helpers
+      export.ts            CSV and evidence-report builders (pure functions)
       selection.tsx        shared state: region, sensor, year, month (synced to the URL)
       theme.ts             sensor colours and ramps
     components/
@@ -27,6 +28,8 @@ web/
       BurningCalendar.tsx  years × months grid for the selected sensor
       FireMap.tsx          MapLibre map of hot pixels for the selected month
       MonthReadout.tsx     figures, units, raw/derived, source and coverage
+      EvidenceInspector.tsx  provenance: status, product, input files + SHA-256, definitions, raw record
+      ExportControls.tsx   CSV downloads and the printable HTML evidence report
 ```
 
 ## State
@@ -48,18 +51,19 @@ it with `useSelection()`, so they cannot drift apart. The selection is written t
 - No formulas from the pipeline are re-implemented here. The only maths on the frontend
   is choosing colour steps (quartiles of the displayed counts).
 
-## Built so far (vertical slice 1)
+## Built so far
 
-RegionSelector, SensorSelector, BurningCalendar, FireMap and a month readout, all
-synchronised, on synthetic fixtures.
+- Slice 1: RegionSelector, SensorSelector, BurningCalendar, FireMap and a month readout,
+  all synchronised, on synthetic fixtures.
+- Slice 2: EvidenceInspector and ExportControls (monthly CSV, hot-pixel CSV, printable
+  HTML evidence report). Exports carry the data status in the file name and in every row,
+  and leave unavailable values empty.
 
 ## Next slices
 
 1. SensorAgreementExplorer (side-by-side MODIS / VIIRS, never summed) — needs Toño's agreement metric.
 2. EnvironmentalContext (weather.json, NASA POWER) with Recharts.
-3. EvidenceInspector (input files, SHA-256, dropped-row counts, methodology).
-4. ExportControls (CSV of the current view, printable HTML evidence report).
-5. Swap fixtures for real pipeline output; Vercel deploy.
+3. Swap fixtures for real pipeline output; Vercel deploy.
 
 ## Open questions for Toño (contract v0.1)
 
@@ -78,4 +82,7 @@ These are proposals. Nothing here should be treated as agreed until Toño confir
    archive in one file will be too heavy for the browser. Proposal: one file per year
    (`hotspots/2021.geojson`) or per region and year.
 6. **`percentile_vs_reference`**: the UI shows it as given (0–100). Which reference period?
-7. **Suomi NPP vs NOAA-20** for VIIRS: the UI displays whatever `platforms` the metadata lists.
+7. **`input_files`** is typed as the pipeline's `ValidationReport.to_dict()` (source_file, sha256,
+   sensor, rows_read, rows_valid, dropped, duplicates_removed, versions, platforms, date_min,
+   date_max). Can the pipeline write its reports there unchanged?
+8. **Suomi NPP vs NOAA-20** for VIIRS: the UI displays whatever `platforms` the metadata lists.

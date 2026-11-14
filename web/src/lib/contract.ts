@@ -43,12 +43,23 @@ export interface Region {
   boundary_note?: string;
 }
 
+/**
+ * One ingested FIRMS file. Mirrors `ValidationReport.to_dict()` in
+ * fire_pipeline/loader.py so the pipeline can write its reports unchanged.
+ */
 export interface InputFile {
-  name: string;
+  source_file: string;
   sha256: string;
   sensor: Sensor;
-  rows_read?: number;
-  rows_valid?: number;
+  rows_read: number;
+  rows_valid: number;
+  /** Rows removed by validation, counted per reason. Never imputed. */
+  dropped: Record<string, number>;
+  duplicates_removed: number;
+  versions: string[];
+  platforms: string[];
+  date_min: string | null;
+  date_max: string | null;
 }
 
 export interface Metadata {

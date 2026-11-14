@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { BurningCalendar } from "@/components/BurningCalendar";
+import { EvidenceInspector } from "@/components/EvidenceInspector";
+import { ExportControls } from "@/components/ExportControls";
 import { MonthReadout } from "@/components/MonthReadout";
 import { RegionSelector } from "@/components/RegionSelector";
 import { SensorSelector } from "@/components/SensorSelector";
@@ -54,6 +56,8 @@ function Explorer({ data }: { data: Dataset }) {
           <div className="lg:col-span-2">
             <MonthReadout metadata={data.metadata} record={record} />
           </div>
+          <EvidenceInspector metadata={data.metadata} record={record} />
+          <ExportControls metadata={data.metadata} monthly={data.monthly} hotspots={data.hotspots} />
         </main>
 
         <footer className="border-t border-line pt-5 text-sm text-muted">
