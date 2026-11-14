@@ -2,40 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
-import type { GeoJSONSource, StyleSpecification } from "maplibre-gl";
+import type { GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { HotspotCollection, HotspotProperties, MonthlyRecord, Region } from "@/lib/contract";
 import { fmtInt, MONTHS_LONG } from "@/lib/data";
+import { BASE_STYLE, GROUND, WORKER_URL } from "@/lib/mapStyle";
 import { useSelection } from "@/lib/selection";
 import { SENSOR_COLOR } from "@/lib/theme";
 
-// Inline style: the data layers still draw on the plain background if the free
-// raster basemap is unreachable.
-const STYLE: StyleSpecification = {
-  version: 8,
-  sources: {
-    basemap: {
-      type: "raster",
-      tiles: ["a", "b", "c", "d"].map((s) => `https://${s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png`),
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: "© OpenStreetMap contributors © CARTO",
-    },
-    labels: {
-      type: "raster",
-      tiles: ["a", "b", "c", "d"].map((s) => `https://${s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png`),
-      tileSize: 256,
-      maxzoom: 19,
-    },
-  },
-  layers: [
-    { id: "ground", type: "background", paint: { "background-color": "#0e151f" } },
-    { id: "basemap", type: "raster", source: "basemap", paint: { "raster-opacity": 0.75 } },
-  ],
-};
-
-// See scripts/copy-maplibre-worker.mjs.
-maplibregl.setWorkerUrl("/vendor/maplibre/maplibre-gl-worker.mjs");
+maplibregl.setWorkerUrl(WORKER_URL);
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string);
 
@@ -85,7 +60,7 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
     try {
       map = new maplibregl.Map({
         container: container.current,
-        style: STYLE,
+        style: BASE_STYLE,
         center: [-116.3, 32.2],
         zoom: 7,
         attributionControl: { compact: true },
@@ -106,7 +81,7 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
         id: "region-outline",
         type: "line",
         source: "region",
-        paint: { "line-color": "#b9c2d0", "line-width": 1, "line-dasharray": [3, 3], "line-opacity": 0.7 },
+        paint: { "line-color": "#b6c3d3", "line-width": 1, "line-dasharray": [3, 3], "line-opacity": 0.7 },
       });
       map.addLayer({
         id: "hotspots",
@@ -117,7 +92,7 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
           "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "frp_mw"]], 0, 3, 10, 9],
           "circle-color": ["match", ["get", "sensor"], "MODIS", SENSOR_COLOR.MODIS, SENSOR_COLOR.VIIRS],
           "circle-opacity": 0.85,
-          "circle-stroke-color": "#0e151f",
+          "circle-stroke-color": GROUND,
           "circle-stroke-width": 1.5,
         },
       });

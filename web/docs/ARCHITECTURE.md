@@ -21,8 +21,11 @@ web/
       export.ts            CSV and evidence-report builders (pure functions)
       selection.tsx        shared state: region, sensor, year, month (synced to the URL)
       theme.ts             sensor colours and ramps
+      mapStyle.ts          shared MapLibre base style
     components/
-      Dashboard.tsx        loads data, loading/error states, demo banner, page layout
+      Dashboard.tsx        loads data, loading/error states, demo banner, cover, tabs
+      HeroMap.tsx          full-bleed, non-interactive map behind the cover (real points)
+      MethodNotes.tsx      "How it works" tab: sensors, pipeline steps, limitations
       RegionSelector.tsx
       SensorSelector.tsx
       BurningCalendar.tsx  years × months grid for the selected sensor
@@ -36,9 +39,9 @@ web/
 
 ## State
 
-One `SelectionProvider` holds `{ regionId, sensor, year, month }`. Every component reads
+One `SelectionProvider` holds `{ regionId, sensor, year, month, tab }`. Every component reads
 it with `useSelection()`, so they cannot drift apart. The selection is written to the URL
-(`?region=…&sensor=…&period=YYYY-MM`) so a view can be shared.
+(`?region=…&sensor=…&period=YYYY-MM&tab=…`) so a view can be shared.
 
 ## Scientific rules enforced in the UI
 
@@ -65,6 +68,12 @@ it with `useSelection()`, so they cannot drift apart. The selection is written t
   the two sensors side by side on separate scales and deliberately computes **no agreement
   score**. Weather is shown as context only, on synthetic values, and the section degrades
   to a notice when weather.json is absent.
+
+- Slice 4: cover and tabs. The cover is the real map showing the busiest month in the
+  dataset (same points as the dashboard, captioned with sensor, month, count and data
+  status). The dashboard is split into five tabs (calendar and map, compare sensors,
+  weather, evidence and export, how it works); the open tab is part of the shared state
+  and the URL (`&tab=`). Region and sensor selectors stay above the tabs.
 
 ## Next slices
 

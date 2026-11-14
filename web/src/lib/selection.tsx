@@ -4,13 +4,17 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { SENSORS, type Sensor } from "./contract";
 import { indexMonthly, toPeriod, yearsIn, type Dataset } from "./data";
 
-/** The four values every component reacts to. */
+export const TABS = ["explore", "sensors", "weather", "evidence", "method"] as const;
+export type Tab = (typeof TABS)[number];
+
+/** The four values every component reacts to, plus the open tab. */
 export interface Selection {
   regionId: string;
   sensor: Sensor;
   year: number;
   /** 1–12 */
   month: number;
+  tab: Tab;
 }
 
 interface SelectionContextValue extends Selection {
@@ -18,6 +22,7 @@ interface SelectionContextValue extends Selection {
   setRegion: (regionId: string) => void;
   setSensor: (sensor: Sensor) => void;
   setPeriod: (year: number, month: number) => void;
+  setTab: (tab: Tab) => void;
 }
 
 const SelectionContext = createContext<SelectionContextValue | null>(null);
@@ -36,7 +41,7 @@ function defaultSelection(data: Dataset): Selection {
       month = Number(period.slice(5));
     }
   }
-  return { regionId, sensor, year, month };
+  return { regionId, sensor, year, month, tab: "explore" };
 }
 
 function fromUrl(data: Dataset, fallback: Selection): Selection {
@@ -50,6 +55,7 @@ function fromUrl(data: Dataset, fallback: Selection): Selection {
     sensor: SENSORS.includes(sensor as Sensor) ? (sensor as Sensor) : fallback.sensor,
     year: years.includes(y) ? y : fallback.year,
     month: years.includes(y) && m >= 1 && m <= 12 ? m : fallback.month,
+    tab: TABS.includes(q.get("tab") as Tab) ? (q.get("tab") as Tab) : fallback.tab,
   };
 }
 
@@ -66,7 +72,7 @@ export function SelectionProvider({ data, children }: { data: Dataset; children:
 
   useEffect(() => {
     if (!hydrated) return;
-    const q = new URLSearchParams({ region: sel.regionId, sensor: sel.sensor, period: toPeriod(sel.year, sel.month) });
+    const q = new URLSearchParams({ region: sel.regionId, sensor: sel.sensor, period: toPeriod(sel.year, sel.month), tab: sel.tab });
     window.history.replaceState(null, "", `?${q.toString()}`);
   }, [sel, hydrated]);
 
@@ -74,9 +80,11 @@ export function SelectionProvider({ data, children }: { data: Dataset; children:
   const setSensor = useCallback((sensor: Sensor) => setSel((s) => ({ ...s, sensor })), []);
   const setPeriod = useCallback((year: number, month: number) => setSel((s) => ({ ...s, year, month })), []);
 
+  const setTab = useCallback((tab: Tab) => setSel((s) => ({ ...s, tab })), []);
+
   const value = useMemo(
-    () => ({ ...sel, period: toPeriod(sel.year, sel.month), setRegion, setSensor, setPeriod }),
-    [sel, setRegion, setSensor, setPeriod],
+    () => ({ ...sel, period: toPeriod(sel.year, sel.month), setRegion, setSensor, setPeriod, setTab }),
+    [sel, setRegion, setSensor, setPeriod, setTab],
   );
   return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;
 }
