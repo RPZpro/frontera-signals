@@ -1,0 +1,683 @@
+{
+  "generated_utc": "2026-11-14T22:11:36+00:00",
+  "boundary": "data/boundaries/mx_bcn_adm1.geojson",
+  "regions": [
+    "MX-BCN"
+  ],
+  "coverage": {
+    "MODIS": [
+      "2020-01-01",
+      "2025-12-31"
+    ],
+    "VIIRS_NOAA20": [
+      "2020-01-01",
+      "2025-12-31"
+    ],
+    "VIIRS_SNPP": [
+      "2020-01-01",
+      "2025-12-31"
+    ]
+  },
+  "grid": {
+    "crs": "EPSG:6933",
+    "crs_name": "WGS 84 / NSIDC EASE-Grid 2.0 Global",
+    "cell_size_m": 10000.0,
+    "cell_area_km2": 100.0,
+    "origin": [
+      0.0,
+      0.0
+    ],
+    "cell_id_format": "{ix}_{iy}, ix=floor(x/cell_size_m), iy=floor(y/cell_size_m)"
+  },
+  "monthly_fire_types": [
+    0
+  ],
+  "monthly_unclassified_type_rows": 0,
+  "monthly_excluded_by_type": {
+    "MODIS": {
+      "2": 117,
+      "3": 200
+    },
+    "VIIRS_NOAA20": {
+      "2": 1307,
+      "3": 10
+    },
+    "VIIRS_SNPP": {
+      "2": 1301,
+      "3": 6
+    }
+  },
+  "collections_by_series_year": {
+    "MODIS": {
+      "2020": [
+        "C6.0"
+      ],
+      "2021": [
+        "C6.0"
+      ],
+      "2022": [
+        "C6.0"
+      ],
+      "2023": [
+        "C6.1"
+      ],
+      "2024": [
+        "C6.1"
+      ],
+      "2025": [
+        "C6.1"
+      ]
+    },
+    "VIIRS_NOAA20": {
+      "2020": [
+        "C2"
+      ],
+      "2021": [
+        "C2"
+      ],
+      "2022": [
+        "C2"
+      ],
+      "2023": [
+        "C2"
+      ],
+      "2024": [
+        "C2"
+      ],
+      "2025": [
+        "C2"
+      ]
+    },
+    "VIIRS_SNPP": {
+      "2020": [
+        "C2"
+      ],
+      "2021": [
+        "C2"
+      ],
+      "2022": [
+        "C2"
+      ],
+      "2023": [
+        "C2"
+      ],
+      "2024": [
+        "C2"
+      ],
+      "2025": [
+        "C2"
+      ]
+    }
+  },
+  "inputs": [
+    {
+      "source_file": "modis_2020_Mexico.csv",
+      "sha256": "5ea774f15fa638ea342af4f503758237369e9dde96aa1edcde8268ce07f8d027",
+      "sensor": "MODIS",
+      "rows_read": 68384,
+      "rows_valid": 68384,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "6.03"
+      ],
+      "collections": [
+        "C6.0"
+      ],
+      "platforms": [
+        "Aqua",
+        "Terra"
+      ],
+      "date_min": "2020-01-01T04:59:00+00:00",
+      "date_max": "2020-12-31T19:49:00+00:00",
+      "series": "MODIS",
+      "year": 2020,
+      "path": "data/raw/firms/modis/modis_2020_Mexico.csv",
+      "region_filter": {
+        "rows_in": 68384,
+        "rows_matched": 1434,
+        "rows_outside": 66950,
+        "per_region": {
+          "MX-BCN": 1434
+        }
+      }
+    },
+    {
+      "source_file": "modis_2021_Mexico.csv",
+      "sha256": "258fee4f348d8c4a9223f4a83ce2adc39c7e18fc373cf740fe289e2a9a1d8ed2",
+      "sensor": "MODIS",
+      "rows_read": 67268,
+      "rows_valid": 67268,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "6.03"
+      ],
+      "collections": [
+        "C6.0"
+      ],
+      "platforms": [
+        "Aqua",
+        "Terra"
+      ],
+      "date_min": "2021-01-01T05:11:00+00:00",
+      "date_max": "2021-12-31T20:57:00+00:00",
+      "series": "MODIS",
+      "year": 2021,
+      "path": "data/raw/firms/modis/modis_2021_Mexico.csv",
+      "region_filter": {
+        "rows_in": 67268,
+        "rows_matched": 803,
+        "rows_outside": 66465,
+        "per_region": {
+          "MX-BCN": 803
+        }
+      }
+    },
+    {
+      "source_file": "modis_2022_Mexico.csv",
+      "sha256": "83e785a14b12957b5d25fdc3fadb1e2a58ce11b953fdcbf0b4bf48ec89f9d297",
+      "sensor": "MODIS",
+      "rows_read": 61585,
+      "rows_valid": 61585,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "6.03"
+      ],
+      "collections": [
+        "C6.0"
+      ],
+      "platforms": [
+        "Aqua",
+        "Terra"
+      ],
+      "date_min": "2022-01-01T04:34:00+00:00",
+      "date_max": "2022-12-31T20:55:00+00:00",
+      "series": "MODIS",
+      "year": 2022,
+      "path": "data/raw/firms/modis/modis_2022_Mexico.csv",
+      "region_filter": {
+        "rows_in": 61585,
+        "rows_matched": 484,
+        "rows_outside": 61101,
+        "per_region": {
+          "MX-BCN": 484
+        }
+      }
+    },
+    {
+      "source_file": "modis_2023_Mexico.csv",
+      "sha256": "84bef2841f2ffdcb1145acc0ed24b9c85fd0c5b470a5595ca5e92e7f0254112a",
+      "sensor": "MODIS",
+      "rows_read": 74676,
+      "rows_valid": 74676,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "61.03"
+      ],
+      "collections": [
+        "C6.1"
+      ],
+      "platforms": [
+        "Aqua",
+        "Terra"
+      ],
+      "date_min": "2023-01-01T07:25:00+00:00",
+      "date_max": "2023-12-31T20:51:00+00:00",
+      "series": "MODIS",
+      "year": 2023,
+      "path": "data/raw/firms/modis/modis_2023_Mexico.csv",
+      "region_filter": {
+        "rows_in": 74676,
+        "rows_matched": 808,
+        "rows_outside": 73868,
+        "per_region": {
+          "MX-BCN": 808
+        }
+      }
+    },
+    {
+      "source_file": "modis_2024_Mexico.csv",
+      "sha256": "706b4a586c991cd11ac2d54766ab82c7fff21a5634b80974247579ba38a14aa9",
+      "sensor": "MODIS",
+      "rows_read": 80390,
+      "rows_valid": 80390,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "61.03"
+      ],
+      "collections": [
+        "C6.1"
+      ],
+      "platforms": [
+        "Aqua",
+        "Terra"
+      ],
+      "date_min": "2024-01-01T04:50:00+00:00",
+      "date_max": "2024-12-31T21:19:00+00:00",
+      "series": "MODIS",
+      "year": 2024,
+      "path": "data/raw/firms/modis/modis_2024_Mexico.csv",
+      "region_filter": {
+        "rows_in": 80390,
+        "rows_matched": 826,
+        "rows_outside": 79564,
+        "per_region": {
+          "MX-BCN": 826
+        }
+      }
+    },
+    {
+      "source_file": "modis_2025_Mexico.csv",
+      "sha256": "7b51d687d999f347dc3679385d98795380cb42311936da6541e4c71a8007fd18",
+      "sensor": "MODIS",
+      "rows_read": 64966,
+      "rows_valid": 64966,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "61.03"
+      ],
+      "collections": [
+        "C6.1"
+      ],
+      "platforms": [
+        "Aqua",
+        "Terra"
+      ],
+      "date_min": "2025-01-01T03:14:00+00:00",
+      "date_max": "2025-12-31T22:01:00+00:00",
+      "series": "MODIS",
+      "year": 2025,
+      "path": "data/raw/firms/modis/modis_2025_Mexico.csv",
+      "region_filter": {
+        "rows_in": 64966,
+        "rows_matched": 1088,
+        "rows_outside": 63878,
+        "per_region": {
+          "MX-BCN": 1088
+        }
+      }
+    },
+    {
+      "source_file": "viirs-jpss1_2020_Mexico.csv",
+      "sha256": "2b3ec8e8f745e8fb09a19f75d4e465b2c9ceaa3ef16758a0c2af00f65e08ae60",
+      "sensor": "VIIRS",
+      "rows_read": 286798,
+      "rows_valid": 286798,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "NOAA-20"
+      ],
+      "date_min": "2020-01-01T08:23:00+00:00",
+      "date_max": "2020-12-31T20:37:00+00:00",
+      "series": "VIIRS_NOAA20",
+      "year": 2020,
+      "path": "data/raw/firms/viirs/viirs-jpss1_2020_Mexico.csv",
+      "region_filter": {
+        "rows_in": 286798,
+        "rows_matched": 4831,
+        "rows_outside": 281967,
+        "per_region": {
+          "MX-BCN": 4831
+        }
+      }
+    },
+    {
+      "source_file": "viirs-jpss1_2021_Mexico.csv",
+      "sha256": "b9072b8a8f712d9ab5010f2696616c629ce82040540d2c49371f88c25c286067",
+      "sensor": "VIIRS",
+      "rows_read": 286179,
+      "rows_valid": 286179,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "NOAA-20"
+      ],
+      "date_min": "2021-01-01T07:21:00+00:00",
+      "date_max": "2021-12-31T19:50:00+00:00",
+      "series": "VIIRS_NOAA20",
+      "year": 2021,
+      "path": "data/raw/firms/viirs/viirs-jpss1_2021_Mexico.csv",
+      "region_filter": {
+        "rows_in": 286179,
+        "rows_matched": 2906,
+        "rows_outside": 283273,
+        "per_region": {
+          "MX-BCN": 2906
+        }
+      }
+    },
+    {
+      "source_file": "viirs-jpss1_2022_Mexico.csv",
+      "sha256": "c8a95e2a52bb57982f8350c70799a0e873392eeb969b9bc7f37b4e8164560714",
+      "sensor": "VIIRS",
+      "rows_read": 275236,
+      "rows_valid": 275236,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "NOAA-20"
+      ],
+      "date_min": "2022-01-01T08:16:00+00:00",
+      "date_max": "2022-12-31T20:49:00+00:00",
+      "series": "VIIRS_NOAA20",
+      "year": 2022,
+      "path": "data/raw/firms/viirs/viirs-jpss1_2022_Mexico.csv",
+      "region_filter": {
+        "rows_in": 275236,
+        "rows_matched": 2303,
+        "rows_outside": 272933,
+        "per_region": {
+          "MX-BCN": 2303
+        }
+      }
+    },
+    {
+      "source_file": "viirs-jpss1_2023_Mexico.csv",
+      "sha256": "2c976d2448113cc0fe1fe88f5d8181b3f29424c8b263238b1aee353bfa655c66",
+      "sensor": "VIIRS",
+      "rows_read": 320740,
+      "rows_valid": 320740,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "NOAA-20"
+      ],
+      "date_min": "2023-01-01T07:33:00+00:00",
+      "date_max": "2023-12-31T20:06:00+00:00",
+      "series": "VIIRS_NOAA20",
+      "year": 2023,
+      "path": "data/raw/firms/viirs/viirs-jpss1_2023_Mexico.csv",
+      "region_filter": {
+        "rows_in": 320740,
+        "rows_matched": 3027,
+        "rows_outside": 317713,
+        "per_region": {
+          "MX-BCN": 3027
+        }
+      }
+    },
+    {
+      "source_file": "viirs-jpss1_2024_Mexico.csv",
+      "sha256": "05d06d10b4245a5425e625ecacbc5212d4c233ed97120faf8ce57238664fce06",
+      "sensor": "VIIRS",
+      "rows_read": 347959,
+      "rows_valid": 347959,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "NOAA-20"
+      ],
+      "date_min": "2024-01-01T06:51:00+00:00",
+      "date_max": "2024-12-31T20:17:00+00:00",
+      "series": "VIIRS_NOAA20",
+      "year": 2024,
+      "path": "data/raw/firms/viirs/viirs-jpss1_2024_Mexico.csv",
+      "region_filter": {
+        "rows_in": 347959,
+        "rows_matched": 3327,
+        "rows_outside": 344632,
+        "per_region": {
+          "MX-BCN": 3327
+        }
+      }
+    },
+    {
+      "source_file": "viirs-jpss1_2025_Mexico.csv",
+      "sha256": "258c2f38c617acf4f0627fa3de6e1029922640d1ed22418b3546cd5d39985e10",
+      "sensor": "VIIRS",
+      "rows_read": 272810,
+      "rows_valid": 272810,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "NOAA-20"
+      ],
+      "date_min": "2025-01-01T07:01:00+00:00",
+      "date_max": "2025-12-31T19:35:00+00:00",
+      "series": "VIIRS_NOAA20",
+      "year": 2025,
+      "path": "data/raw/firms/viirs/viirs-jpss1_2025_Mexico.csv",
+      "region_filter": {
+        "rows_in": 272810,
+        "rows_matched": 4951,
+        "rows_outside": 267859,
+        "per_region": {
+          "MX-BCN": 4951
+        }
+      }
+    },
+    {
+      "source_file": "viirs-snpp_2020_Mexico.csv",
+      "sha256": "2536b0bc3c525d76559707cba4a089eb4b81cbb0ef7a8a45fb17dedc49c226f4",
+      "sensor": "VIIRS",
+      "rows_read": 290836,
+      "rows_valid": 290836,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "Suomi NPP"
+      ],
+      "date_min": "2020-01-01T07:34:00+00:00",
+      "date_max": "2020-12-31T21:27:00+00:00",
+      "series": "VIIRS_SNPP",
+      "year": 2020,
+      "path": "data/raw/firms/viirs/viirs-snpp_2020_Mexico.csv",
+      "region_filter": {
+        "rows_in": 290836,
+        "rows_matched": 5089,
+        "rows_outside": 285747,
+        "per_region": {
+          "MX-BCN": 5089
+        }
+      }
+    },
+    {
+      "source_file": "viirs-snpp_2021_Mexico.csv",
+      "sha256": "4434553cb4ca687d1752baf519072d50b74fcfcc92c466eabed9a7c90046dc4e",
+      "sensor": "VIIRS",
+      "rows_read": 292023,
+      "rows_valid": 292023,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "Suomi NPP"
+      ],
+      "date_min": "2021-01-01T08:10:00+00:00",
+      "date_max": "2021-12-31T20:44:00+00:00",
+      "series": "VIIRS_SNPP",
+      "year": 2021,
+      "path": "data/raw/firms/viirs/viirs-snpp_2021_Mexico.csv",
+      "region_filter": {
+        "rows_in": 292023,
+        "rows_matched": 3158,
+        "rows_outside": 288865,
+        "per_region": {
+          "MX-BCN": 3158
+        }
+      }
+    },
+    {
+      "source_file": "viirs-snpp_2022_Mexico.csv",
+      "sha256": "876de3ba08e0cdbe5085e2cb49e40ca92df7ea5b7e4b2b3e7479656569e7ee18",
+      "sensor": "VIIRS",
+      "rows_read": 275471,
+      "rows_valid": 275471,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "Suomi NPP"
+      ],
+      "date_min": "2022-01-01T07:28:00+00:00",
+      "date_max": "2022-12-31T20:00:00+00:00",
+      "series": "VIIRS_SNPP",
+      "year": 2022,
+      "path": "data/raw/firms/viirs/viirs-snpp_2022_Mexico.csv",
+      "region_filter": {
+        "rows_in": 275471,
+        "rows_matched": 2147,
+        "rows_outside": 273324,
+        "per_region": {
+          "MX-BCN": 2147
+        }
+      }
+    },
+    {
+      "source_file": "viirs-snpp_2023_Mexico.csv",
+      "sha256": "790e6176f578f4b47741905d9c598a63cfd935c0fe879fff6cecca3adc3126a6",
+      "sensor": "VIIRS",
+      "rows_read": 327657,
+      "rows_valid": 327657,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "Suomi NPP"
+      ],
+      "date_min": "2023-01-01T06:45:00+00:00",
+      "date_max": "2023-12-31T20:57:00+00:00",
+      "series": "VIIRS_SNPP",
+      "year": 2023,
+      "path": "data/raw/firms/viirs/viirs-snpp_2023_Mexico.csv",
+      "region_filter": {
+        "rows_in": 327657,
+        "rows_matched": 3367,
+        "rows_outside": 324290,
+        "per_region": {
+          "MX-BCN": 3367
+        }
+      }
+    },
+    {
+      "source_file": "viirs-snpp_2024_Mexico.csv",
+      "sha256": "d6b2089e4f32509e4ecd8243f9296ec0138e00b22691599534d11bc58ab52bfd",
+      "sensor": "VIIRS",
+      "rows_read": 330134,
+      "rows_valid": 330134,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "Suomi NPP"
+      ],
+      "date_min": "2024-01-01T07:39:00+00:00",
+      "date_max": "2024-12-31T21:34:00+00:00",
+      "series": "VIIRS_SNPP",
+      "year": 2024,
+      "path": "data/raw/firms/viirs/viirs-snpp_2024_Mexico.csv",
+      "region_filter": {
+        "rows_in": 330134,
+        "rows_matched": 3291,
+        "rows_outside": 326843,
+        "per_region": {
+          "MX-BCN": 3291
+        }
+      }
+    },
+    {
+      "source_file": "viirs-snpp_2025_Mexico.csv",
+      "sha256": "794e5b4d51e1a1c716b562797faeb2dd530f32aa71a92a5e77a296a7f6bac3d1",
+      "sensor": "VIIRS",
+      "rows_read": 276921,
+      "rows_valid": 276921,
+      "dropped": {},
+      "duplicates_removed": 0,
+      "versions": [
+        "2"
+      ],
+      "collections": [
+        "C2"
+      ],
+      "platforms": [
+        "Suomi NPP"
+      ],
+      "date_min": "2025-01-01T08:17:00+00:00",
+      "date_max": "2025-12-31T20:52:00+00:00",
+      "series": "VIIRS_SNPP",
+      "year": 2025,
+      "path": "data/raw/firms/viirs/viirs-snpp_2025_Mexico.csv",
+      "region_filter": {
+        "rows_in": 276921,
+        "rows_matched": 4689,
+        "rows_outside": 272232,
+        "per_region": {
+          "MX-BCN": 4689
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "detections_rows": 48529,
+    "monthly_input_rows": 45588,
+    "monthly_rows": 216
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hotspots.schema.json",
+  "title": "Fire Seasons hotspots (one year)",
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "FeatureCollection"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "region_id": {
+      "type": "string"
+    },
+    "year": {
+      "type": "integer"
+    },
+    "kind": {
+      "const": "raw"
+    },
+    "source": {
+      "type": "string"
+    },
+    "time_standard": {
+      "const": "UTC"
+    },
+    "properties_legend": {
+      "type": "object"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "Feature"
+          },
+          "geometry": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "Point"
+              },
+              "coordinates": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  }
+                ],
+                "minItems": 2,
+                "maxItems": 2
+              }
+            },
+            "required": [
+              "type",
+              "coordinates"
+            ],
+            "additionalProperties": false
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "series": {
+                "enum": [
+                  "MODIS",
+                  "VIIRS_SNPP",
+                  "VIIRS_NOAA20",
+                  "VIIRS_NOAA21"
+                ]
+              },
+              "platform": {
+                "enum": [
+                  "Terra",
+                  "Aqua",
+                  "Suomi NPP",
+                  "NOAA-20",
+                  "NOAA-21"
+                ]
+              },
+              "version": {
+                "type": "string"
+              },
+              "t": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}Z$"
+              },
+              "dn": {
+                "enum": [
+                  "D",
+                  "N"
+                ]
+              },
+              "frp_mw": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "bright_k": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "conf": {
+                "type": "string"
+              },
+              "conf_class": {
+                "enum": [
+                  "low",
+                  "nominal",
+                  "high"
+                ]
+              },
+              "fire_type": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  null
+                ]
+              },
+              "counted": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "series",
+              "platform",
+              "version",
+              "t",
+              "dn",
+              "frp_mw",
+              "bright_k",
+              "conf",
+              "conf_class",
+              "fire_type",
+              "counted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "type",
+          "geometry",
+          "properties"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "type",
+    "schema_version",
+    "region_id",
+    "year",
+    "kind",
+    "source",
+    "time_standard",
+    "properties_legend",
+    "features"
+  ],
+  "additionalProperties": false
+}

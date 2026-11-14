@@ -161,6 +161,30 @@ def test_archive_type_column_and_duplicates(tmp_path):
     assert df.loc[0, "fire_type"] == 0 and not df.loc[0, "is_nrt"]
 
 
+# ---------------------------------------------------------------- version -> collection
+@pytest.mark.parametrize("version,coll", [("6.03", "C6.0"), ("6.0NRT", "C6.0"),
+                                          ("61.03", "C6.1"), ("6.1", "C6.1"),
+                                          ("6.1NRT", "C6.1")])
+def test_modis_collection_from_version(tmp_path, version, coll):
+    row = GOOD_MODIS.replace("6.1NRT", version)
+    df, _ = load_firms_csv(write(tmp_path, "m.csv", MODIS_HEADER, row))
+    assert df.loc[0, "collection"] == coll and df.loc[0, "product"] == f"MOD14 {coll}"
+    assert df.loc[0, "series"] == "MODIS"
+
+
+def test_unknown_version_rejected(tmp_path):
+    row = GOOD_MODIS.replace("6.1NRT", "7.2")
+    df, rep = load_firms_csv(write(tmp_path, "m.csv", MODIS_HEADER, row))
+    assert df.empty and rep.dropped == {"unrecognised_version": 1}
+
+
+def test_viirs_series_per_satellite(tmp_path):
+    rows = [f"32.5,-116.9,330,0.4,0.4,2024-08-01,2050,{s},n,2,290,3.1,N" for s in ("N", "N20")]
+    df, _ = load_firms_csv(write(tmp_path, "v.csv", VIIRS_HEADER, *rows))
+    assert set(df["series"]) == {"VIIRS_SNPP", "VIIRS_NOAA20"}
+    assert set(df["product"]) == {"VNP14IMG C2", "VJ114IMG C2"}
+
+
 # ---------------------------------------------------------------- 9. reproducibility
 def test_reproducible():
     a, ra = load_firms_csv(VIIRS_CSV)
