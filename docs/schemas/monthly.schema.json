@@ -1,0 +1,466 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "monthly.schema.json",
+  "title": "Fire Seasons monthly activity",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "region_id": {
+            "type": "string"
+          },
+          "series": {
+            "enum": [
+              "MODIS",
+              "VIIRS_SNPP",
+              "VIIRS_NOAA20",
+              "VIIRS_NOAA21"
+            ]
+          },
+          "sensor": {
+            "enum": [
+              "MODIS",
+              "VIIRS"
+            ]
+          },
+          "period": {
+            "type": "string",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+          },
+          "period_type": {
+            "const": "month"
+          },
+          "time_standard": {
+            "const": "UTC"
+          },
+          "source": {
+            "type": "string"
+          },
+          "product": {
+            "type": "string"
+          },
+          "product_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quality": {
+            "enum": [
+              "ok",
+              "partial_coverage",
+              "no_data"
+            ]
+          },
+          "coverage_fraction": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "hotspot_count": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "unit": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "raw",
+                      "derived"
+                    ]
+                  },
+                  "seasonal": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "const": "derived"
+                      },
+                      "ref_period": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{4}$"
+                      },
+                      "n_ref": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "ref_median": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_min": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_max": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "percentile": {
+                        "type": [
+                          "number",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "activity_class": {
+                        "enum": [
+                          "above_range",
+                          "within_range",
+                          "below_range",
+                          "not_evaluated",
+                          "insufficient_reference"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "ref_period",
+                      "n_ref",
+                      "ref_median",
+                      "ref_min",
+                      "ref_max",
+                      "percentile",
+                      "activity_class"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit",
+                  "kind",
+                  "seasonal"
+                ],
+                "additionalProperties": false
+              },
+              "frp_sum_mw": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "unit": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "raw",
+                      "derived"
+                    ]
+                  },
+                  "seasonal": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "const": "derived"
+                      },
+                      "ref_period": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{4}$"
+                      },
+                      "n_ref": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "ref_median": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_min": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_max": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "percentile": {
+                        "type": [
+                          "number",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "activity_class": {
+                        "enum": [
+                          "above_range",
+                          "within_range",
+                          "below_range",
+                          "not_evaluated",
+                          "insufficient_reference"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "ref_period",
+                      "n_ref",
+                      "ref_median",
+                      "ref_min",
+                      "ref_max",
+                      "percentile",
+                      "activity_class"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit",
+                  "kind",
+                  "seasonal"
+                ],
+                "additionalProperties": false
+              },
+              "active_cells": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "unit": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "raw",
+                      "derived"
+                    ]
+                  },
+                  "seasonal": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "const": "derived"
+                      },
+                      "ref_period": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{4}$"
+                      },
+                      "n_ref": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "ref_median": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_min": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_max": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "percentile": {
+                        "type": [
+                          "number",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "activity_class": {
+                        "enum": [
+                          "above_range",
+                          "within_range",
+                          "below_range",
+                          "not_evaluated",
+                          "insufficient_reference"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "ref_period",
+                      "n_ref",
+                      "ref_median",
+                      "ref_min",
+                      "ref_max",
+                      "percentile",
+                      "activity_class"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit",
+                  "kind",
+                  "seasonal"
+                ],
+                "additionalProperties": false
+              },
+              "active_cell_days": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "unit": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "raw",
+                      "derived"
+                    ]
+                  },
+                  "seasonal": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "const": "derived"
+                      },
+                      "ref_period": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{4}$"
+                      },
+                      "n_ref": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "ref_median": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_min": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "ref_max": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "percentile": {
+                        "type": [
+                          "number",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "activity_class": {
+                        "enum": [
+                          "above_range",
+                          "within_range",
+                          "below_range",
+                          "not_evaluated",
+                          "insufficient_reference"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "ref_period",
+                      "n_ref",
+                      "ref_median",
+                      "ref_min",
+                      "ref_max",
+                      "percentile",
+                      "activity_class"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit",
+                  "kind",
+                  "seasonal"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "hotspot_count",
+              "frp_sum_mw",
+              "active_cells",
+              "active_cell_days"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "region_id",
+          "series",
+          "sensor",
+          "period",
+          "period_type",
+          "time_standard",
+          "source",
+          "product",
+          "product_version",
+          "quality",
+          "coverage_fraction",
+          "metrics"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "records"
+  ],
+  "additionalProperties": false
+}

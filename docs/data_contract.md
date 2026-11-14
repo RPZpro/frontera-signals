@@ -1,7 +1,7 @@
 # Data contract — Fire Seasons pipeline
 
 Owner: Science & Engineering (Toño). Consumer: UI/Integration (Ricardo).
-Status: **v0.5 draft**. Input, loader, polygon filtering and the monthly table are implemented and have been
+Status: **v1.0**. The frontend exports are implemented; changes need coordination with Ricardo. Input, loader, polygon filtering and the monthly table are implemented and have been
 run on real 2020–2025 data (`python -m fire_pipeline.run_monthly`, outputs in `data/processed/`). The frontend
 outputs below are a proposal for Ricardo to review before implementation.
 
@@ -108,23 +108,29 @@ notes for the UI. Method and results are in `docs/methodology.md`.
 `data/processed/weather_report.json`: cell weights, QC exclusions, and the exploratory
 association between fire and weather (descriptive only).
 
-## 7. Frontend outputs (proposal, not yet implemented)
+## 7. Frontend outputs v1 (implemented, `python -m fire_pipeline.export`)
 
-Common fields on every measurement:
-`region_id, sensor, period, source, product_version, unit, quality, metric_kind`
-with `metric_kind ∈ {"raw","derived"}` and `quality ∈ {"ok","partial_coverage","no_data"}`.
-Unavailable values are `null`, never 0.
+Folder: **`data/export/`**. JSON Schemas (draft 2020-12): **`docs/schemas/`**.
+Rules: unavailable means `null` (never 0 or NaN). Every measurement carries
+region, series/sensor, period, source, product version, unit, quality and `kind` (`raw` | `derived`).
 
-- **metadata.json**: pipeline version, run timestamp, input files with SHA-256,
-  date ranges per sensor, grid definition, reference periods, and limitations text.
-- **monthly.json**: one record per region × sensor × month. Holds `hotspot_count`
-  (raw), `active_cells` (derived, common grid), `percentile_vs_reference`
-  (derived, sensor-specific), and `frp_sum_mw` (raw sum).
-- **hotspots.geojson**: Point features carrying the canonical detection columns
-  (subset), one FeatureCollection per sensor or a `sensor` property.
-- **weather.json**: region × month NASA POWER T2M (°C), RH2M (%),
-  PRECTOTCORR (mm/day), WS10M (m/s), with POWER grid resolution noted.
-- **methodology.md**: human-readable methods and limitations.
+| File | Size | Contents |
+|---|---|---|
+| `metadata.json` | 20 KB | provenance (inputs + SHA-256, git commit), region, series, methods, metric dictionary (EN/ES labels), activity class labels (EN/ES), **limitations (EN/ES)**, hotspot property legend, list of files |
+| `monthly.json` | 450 KB | `records[]`: region x series x month, with 4 metrics, each `{value, unit, kind, seasonal: {percentile, activity_class, ref_median, ref_min, ref_max, n_ref, ref_period}}` |
+| `agreement.json` | 20 KB | `pairs[]`: sensor comparison per metric and pair of series, with `assessment.notes` ready to show |
+| `weather.json` | 170 KB | `records[]`: region x month x variable (2020–2025), value, normal 1991–2020, anomaly, anomaly_pct, quality |
+| `hotspots_<YEAR>.geojson` | 1.4–3.2 MB each | original detections, one file per year (load on demand). Short property keys are explained in `properties_legend` |
+| `methodology.md` | 10 KB | methods, results and limitations |
+
+UI suggestions:
+- Use `active_cells` and its `seasonal.percentile` to compare sensors. Show `hotspot_count` as
+  the original observation, but never put MODIS and VIIRS counts on the same axis as if equivalent.
+- `activity_class = above_range` means "highest of the 6-year record for this month", so use the
+  label in `metadata.activity_classes`. Do not call it "anomalous" or "extreme".
+- Show the `metadata.limitations` texts near the charts.
+- Draw `quality != "ok"` and `value == null` as gaps, not zeros.
+- In maps, `counted == false` marks static and offshore sources. Grey them out or hide them.
 
 ## 8. Scientific limitations (must be shown in the UI)
 
