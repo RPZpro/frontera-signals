@@ -1,0 +1,542 @@
+{
+  "schema_version": "1.0.0",
+  "ref_years": "2020-2025",
+  "kind": "derived",
+  "pairs": [
+    {
+      "region_id": "MX-BCN",
+      "metric": "active_cell_days",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_NOAA20",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.922,
+      "spearman_percentile": 0.782,
+      "mean_abs_percentile_diff": 14.4,
+      "median_abs_percentile_diff": 10.0,
+      "above_range": {
+        "both": 7,
+        "only_a": 4,
+        "only_b": 5,
+        "neither": 56,
+        "kappa": 0.534,
+        "jaccard": 0.438
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 4.09,
+        "iqr": 2.48
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": false,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity.",
+          "Cell ratio between series varies a lot month to month; do not convert one series into the other with a fixed factor."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "active_cell_days",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.921,
+      "spearman_percentile": 0.68,
+      "mean_abs_percentile_diff": 18.6,
+      "median_abs_percentile_diff": 20.0,
+      "above_range": {
+        "both": 7,
+        "only_a": 4,
+        "only_b": 5,
+        "neither": 56,
+        "kappa": 0.534,
+        "jaccard": 0.438
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 3.95,
+        "iqr": 2.08
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": false,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity.",
+          "Cell ratio between series varies a lot month to month; do not convert one series into the other with a fixed factor."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "active_cell_days",
+      "series_a": "VIIRS_NOAA20",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.973,
+      "spearman_percentile": 0.817,
+      "mean_abs_percentile_diff": 12.8,
+      "median_abs_percentile_diff": 0.0,
+      "above_range": {
+        "both": 8,
+        "only_a": 4,
+        "only_b": 4,
+        "neither": 56,
+        "kappa": 0.6,
+        "jaccard": 0.5
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 0.96,
+        "iqr": 0.16
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": true,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "active_cells",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_NOAA20",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.928,
+      "spearman_percentile": 0.802,
+      "mean_abs_percentile_diff": 13.3,
+      "median_abs_percentile_diff": 5.0,
+      "above_range": {
+        "both": 10,
+        "only_a": 2,
+        "only_b": 1,
+        "neither": 59,
+        "kappa": 0.845,
+        "jaccard": 0.769
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 2.88,
+        "iqr": 1.65
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": false,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity.",
+          "Cell ratio between series varies a lot month to month; do not convert one series into the other with a fixed factor."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "active_cells",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.892,
+      "spearman_percentile": 0.726,
+      "mean_abs_percentile_diff": 17.8,
+      "median_abs_percentile_diff": 20.0,
+      "above_range": {
+        "both": 6,
+        "only_a": 6,
+        "only_b": 6,
+        "neither": 54,
+        "kappa": 0.4,
+        "jaccard": 0.333
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 2.78,
+        "iqr": 1.52
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": false,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity.",
+          "Cell ratio between series varies a lot month to month; do not convert one series into the other with a fixed factor."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "active_cells",
+      "series_a": "VIIRS_NOAA20",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.958,
+      "spearman_percentile": 0.873,
+      "mean_abs_percentile_diff": 10.8,
+      "median_abs_percentile_diff": 10.0,
+      "above_range": {
+        "both": 7,
+        "only_a": 4,
+        "only_b": 5,
+        "neither": 56,
+        "kappa": 0.534,
+        "jaccard": 0.438
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 1.0,
+        "iqr": 0.16
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": true,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "frp_sum_mw",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_NOAA20",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.961,
+      "spearman_percentile": 0.886,
+      "mean_abs_percentile_diff": 8.9,
+      "median_abs_percentile_diff": 0.0,
+      "above_range": {
+        "both": 10,
+        "only_a": 2,
+        "only_b": 2,
+        "neither": 58,
+        "kappa": 0.8,
+        "jaccard": 0.714
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 0.93,
+        "iqr": 0.63
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": false,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity.",
+          "Cell ratio between series varies a lot month to month; do not convert one series into the other with a fixed factor."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "frp_sum_mw",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.966,
+      "spearman_percentile": 0.919,
+      "mean_abs_percentile_diff": 8.3,
+      "median_abs_percentile_diff": 0.0,
+      "above_range": {
+        "both": 10,
+        "only_a": 2,
+        "only_b": 2,
+        "neither": 58,
+        "kappa": 0.8,
+        "jaccard": 0.714
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 0.9,
+        "iqr": 0.84
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": false,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity.",
+          "Cell ratio between series varies a lot month to month; do not convert one series into the other with a fixed factor."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "frp_sum_mw",
+      "series_a": "VIIRS_NOAA20",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.967,
+      "spearman_percentile": 0.876,
+      "mean_abs_percentile_diff": 10.0,
+      "median_abs_percentile_diff": 0.0,
+      "above_range": {
+        "both": 10,
+        "only_a": 2,
+        "only_b": 2,
+        "neither": 58,
+        "kappa": 0.8,
+        "jaccard": 0.714
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 1.04,
+        "iqr": 0.61
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": false,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity.",
+          "Cell ratio between series varies a lot month to month; do not convert one series into the other with a fixed factor."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "hotspot_count",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_NOAA20",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.948,
+      "spearman_percentile": 0.816,
+      "mean_abs_percentile_diff": 12.2,
+      "median_abs_percentile_diff": 0.0,
+      "above_range": {
+        "both": 11,
+        "only_a": 1,
+        "only_b": 1,
+        "neither": 59,
+        "kappa": 0.9,
+        "jaccard": 0.846
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 4.33,
+        "iqr": 1.67
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": true,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "hotspot_count",
+      "series_a": "MODIS",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.95,
+      "spearman_percentile": 0.867,
+      "mean_abs_percentile_diff": 10.0,
+      "median_abs_percentile_diff": 0.0,
+      "above_range": {
+        "both": 10,
+        "only_a": 2,
+        "only_b": 2,
+        "neither": 58,
+        "kappa": 0.8,
+        "jaccard": 0.714
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 4.35,
+        "iqr": 1.85
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": true,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    },
+    {
+      "region_id": "MX-BCN",
+      "metric": "hotspot_count",
+      "series_a": "VIIRS_NOAA20",
+      "series_b": "VIIRS_SNPP",
+      "n_months": 72,
+      "period": [
+        "2020-01",
+        "2025-12"
+      ],
+      "spearman_raw": 0.978,
+      "spearman_percentile": 0.895,
+      "mean_abs_percentile_diff": 7.8,
+      "median_abs_percentile_diff": 0.0,
+      "above_range": {
+        "both": 9,
+        "only_a": 3,
+        "only_b": 3,
+        "neither": 57,
+        "kappa": 0.7,
+        "jaccard": 0.6
+      },
+      "ratio_b_over_a": {
+        "n": 72,
+        "median": 0.98,
+        "iqr": 0.22
+      },
+      "assessment": {
+        "percentile_agreement": "strong",
+        "event_agreement": true,
+        "stable_ratio": true,
+        "notes": [
+          "Raw hotspot counts are not comparable between sensors (resolution, sensitivity, overpass time differ); compare percentiles instead.",
+          "Strong agreement in relative (seasonal-percentile) activity."
+        ],
+        "rules": {
+          "min_months": 24,
+          "strong_percentile_spearman": 0.6,
+          "moderate_percentile_spearman": 0.4,
+          "min_kappa_for_event_agreement": 0.4,
+          "max_ratio_iqr_over_median": 0.5
+        }
+      }
+    }
+  ]
+}
