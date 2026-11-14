@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agreement.schema.json",
+  "title": "Fire Seasons sensor agreement",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "ref_years": {
+      "type": "string"
+    },
+    "kind": {
+      "const": "derived"
+    },
+    "pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "region_id": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string"
+          },
+          "series_a": {
+            "enum": [
+              "MODIS",
+              "VIIRS_SNPP",
+              "VIIRS_NOAA20",
+              "VIIRS_NOAA21"
+            ]
+          },
+          "series_b": {
+            "enum": [
+              "MODIS",
+              "VIIRS_SNPP",
+              "VIIRS_NOAA20",
+              "VIIRS_NOAA21"
+            ]
+          },
+          "n_months": {
+            "type": "integer"
+          },
+          "period": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+            }
+          },
+          "spearman_raw": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "spearman_percentile": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "mean_abs_percentile_diff": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "median_abs_percentile_diff": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "above_range": {
+            "type": "object",
+            "properties": {
+              "both": {
+                "type": "integer"
+              },
+              "only_a": {
+                "type": "integer"
+              },
+              "only_b": {
+                "type": "integer"
+              },
+              "neither": {
+                "type": "integer"
+              },
+              "kappa": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "jaccard": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "both",
+              "only_a",
+              "only_b",
+              "neither",
+              "kappa",
+              "jaccard"
+            ],
+            "additionalProperties": false
+          },
+          "ratio_b_over_a": {
+            "type": "object",
+            "properties": {
+              "n": {
+                "type": "integer"
+              },
+              "median": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "iqr": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "n",
+              "median",
+              "iqr"
+            ],
+            "additionalProperties": false
+          },
+          "assessment": {
+            "type": "object",
+            "properties": {
+              "percentile_agreement": {
+                "enum": [
+                  "strong",
+                  "moderate",
+                  "weak",
+                  "insufficient_data"
+                ]
+              },
+              "event_agreement": {
+                "type": "boolean"
+              },
+              "stable_ratio": {
+                "type": "boolean"
+              },
+              "notes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rules": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "percentile_agreement",
+              "event_agreement",
+              "stable_ratio",
+              "notes",
+              "rules"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "region_id",
+          "metric",
+          "series_a",
+          "series_b",
+          "n_months",
+          "period",
+          "spearman_raw",
+          "spearman_percentile",
+          "mean_abs_percentile_diff",
+          "median_abs_percentile_diff",
+          "above_range",
+          "ratio_b_over_a",
+          "assessment"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "ref_years",
+    "kind",
+    "pairs"
+  ],
+  "additionalProperties": false
+}

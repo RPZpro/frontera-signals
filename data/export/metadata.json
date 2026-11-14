@@ -1,0 +1,622 @@
+{
+  "schema_version": "1.0.0",
+  "pipeline": {
+    "name": "fire_pipeline",
+    "version": "0.5.0",
+    "commit": "3745e16cbfd1f8234f21a44d399a2fcc4cc44381",
+    "code_dirty": false,
+    "generated_utc": "2026-11-14T22:26:30+00:00"
+  },
+  "project": {
+    "team": "Frontera Signal",
+    "challenge": "NASA Space Apps 2026 — Harmonization of MODIS and VIIRS Hot Spots",
+    "title": "Fire Seasons — Historical Thermal Anomalies"
+  },
+  "regions": [
+    {
+      "region_id": "MX-BCN",
+      "name": "Baja California",
+      "iso_3166_2": "MX-BCN",
+      "area_km2": 72853.6,
+      "bbox": [
+        -118.36648,
+        28.0,
+        -112.75555,
+        32.71863
+      ],
+      "boundary_source": "geoBoundaries gbOpen MEX ADM1 (INEGI 2020), CC BY 3.0 IGO"
+    }
+  ],
+  "series": {
+    "MODIS": {
+      "sensor": "MODIS",
+      "platforms": [
+        "Terra",
+        "Aqua"
+      ],
+      "product": "MOD14/MYD14",
+      "label_en": "MODIS (Terra + Aqua)",
+      "label_es": "MODIS (Terra + Aqua)",
+      "nominal_resolution_m": 1000,
+      "coverage": [
+        "2020-01-01",
+        "2025-12-31"
+      ],
+      "collections_by_year": {
+        "2020": [
+          "C6.0"
+        ],
+        "2021": [
+          "C6.0"
+        ],
+        "2022": [
+          "C6.0"
+        ],
+        "2023": [
+          "C6.1"
+        ],
+        "2024": [
+          "C6.1"
+        ],
+        "2025": [
+          "C6.1"
+        ]
+      },
+      "source": "NASA FIRMS yearly country summary (standard processing)"
+    },
+    "VIIRS_SNPP": {
+      "sensor": "VIIRS",
+      "platforms": [
+        "Suomi NPP"
+      ],
+      "product": "VNP14IMG",
+      "label_en": "VIIRS Suomi NPP",
+      "label_es": "VIIRS Suomi NPP",
+      "nominal_resolution_m": 375,
+      "coverage": [
+        "2020-01-01",
+        "2025-12-31"
+      ],
+      "collections_by_year": {
+        "2020": [
+          "C2"
+        ],
+        "2021": [
+          "C2"
+        ],
+        "2022": [
+          "C2"
+        ],
+        "2023": [
+          "C2"
+        ],
+        "2024": [
+          "C2"
+        ],
+        "2025": [
+          "C2"
+        ]
+      },
+      "source": "NASA FIRMS yearly country summary (standard processing)"
+    },
+    "VIIRS_NOAA20": {
+      "sensor": "VIIRS",
+      "platforms": [
+        "NOAA-20"
+      ],
+      "product": "VJ114IMG",
+      "label_en": "VIIRS NOAA-20",
+      "label_es": "VIIRS NOAA-20",
+      "nominal_resolution_m": 375,
+      "coverage": [
+        "2020-01-01",
+        "2025-12-31"
+      ],
+      "collections_by_year": {
+        "2020": [
+          "C2"
+        ],
+        "2021": [
+          "C2"
+        ],
+        "2022": [
+          "C2"
+        ],
+        "2023": [
+          "C2"
+        ],
+        "2024": [
+          "C2"
+        ],
+        "2025": [
+          "C2"
+        ]
+      },
+      "source": "NASA FIRMS yearly country summary (standard processing)"
+    }
+  },
+  "methods": {
+    "time_standard_fire": "UTC",
+    "grid": {
+      "crs": "EPSG:6933",
+      "crs_name": "WGS 84 / NSIDC EASE-Grid 2.0 Global",
+      "cell_size_m": 10000.0,
+      "cell_area_km2": 100.0,
+      "origin": [
+        0.0,
+        0.0
+      ],
+      "cell_id_format": "{ix}_{iy}, ix=floor(x/cell_size_m), iy=floor(y/cell_size_m)"
+    },
+    "monthly_fire_types": [
+      0
+    ],
+    "fire_type_labels": {
+      "0": "presumed vegetation fire",
+      "1": "active volcano",
+      "2": "other static land source",
+      "3": "offshore"
+    },
+    "excluded_by_fire_type": {
+      "MODIS": {
+        "2": 117,
+        "3": 200
+      },
+      "VIIRS_NOAA20": {
+        "2": 1307,
+        "3": 10
+      },
+      "VIIRS_SNPP": {
+        "2": 1301,
+        "3": 6
+      }
+    },
+    "seasonal_reference": "leave-one-out, same calendar month, same series",
+    "weather_normal_period": [
+      1991,
+      2020
+    ],
+    "weather_aggregation": "area-weighted mean of native cells, intersection areas in EPSG:6933",
+    "weather_qc": {
+      "plausible_max_cell_monthly_mean": {
+        "PRECTOTCORR": 30.0
+      },
+      "excluded": [
+        {
+          "variable": "PRECTOTCORR",
+          "month": "2020-06",
+          "n_cells_over": 15,
+          "max_value": 151.36
+        }
+      ],
+      "note": "Whole variable-month set to null when any native cell exceeds the bound (source artifact, e.g. PRECTOTCORR 2020-06 with 2110 mm on 2020-06-10 at -115.0/28.5 in the POWER daily API)."
+    }
+  },
+  "metrics": {
+    "hotspot_count": {
+      "unit": "detections",
+      "kind": "raw",
+      "label_en": "Hotspots",
+      "label_es": "Puntos de calor",
+      "description": "Number of FIRMS detections (pixels). Not comparable across sensors."
+    },
+    "frp_sum_mw": {
+      "unit": "MW",
+      "kind": "raw",
+      "label_en": "Total fire radiative power",
+      "label_es": "Potencia radiativa total",
+      "description": "Sum of FRP of all detections in the month."
+    },
+    "active_cells": {
+      "unit": "cells",
+      "kind": "derived",
+      "label_en": "Active 10 km cells",
+      "label_es": "Celdas activas de 10 km",
+      "description": "Distinct 10 km equal-area cells with >= 1 detection; reduces pixel-size effect."
+    },
+    "active_cell_days": {
+      "unit": "cell-days",
+      "kind": "derived",
+      "label_en": "Active cell-days",
+      "label_es": "Celdas-día activas",
+      "description": "Distinct (cell, UTC day) pairs with >= 1 detection."
+    }
+  },
+  "activity_classes": {
+    "above_range": {
+      "en": "Highest of the record for this calendar month",
+      "es": "El más alto del registro para este mes"
+    },
+    "within_range": {
+      "en": "Within the range of other years",
+      "es": "Dentro del rango de otros años"
+    },
+    "below_range": {
+      "en": "Lowest of the record for this calendar month",
+      "es": "El más bajo del registro para este mes"
+    },
+    "not_evaluated": {
+      "en": "Not evaluated (incomplete coverage)",
+      "es": "No evaluado (cobertura incompleta)"
+    },
+    "insufficient_reference": {
+      "en": "Too few reference years",
+      "es": "Muy pocos años de referencia"
+    }
+  },
+  "weather_variables": {
+    "T2M": {
+      "long_name": "Temperature at 2 m",
+      "label_es": "Temperatura a 2 m",
+      "unit": "C"
+    },
+    "RH2M": {
+      "long_name": "Relative humidity at 2 m",
+      "label_es": "Humedad relativa a 2 m",
+      "unit": "%"
+    },
+    "PRECTOTCORR": {
+      "long_name": "Precipitation (bias corrected)",
+      "label_es": "Precipitación",
+      "unit": "mm/day"
+    },
+    "WS10M": {
+      "long_name": "Wind speed at 10 m",
+      "label_es": "Velocidad del viento a 10 m",
+      "unit": "m/s"
+    }
+  },
+  "weather_years_exported": [
+    2020,
+    2025
+  ],
+  "inputs": [
+    {
+      "file": "modis_2020_Mexico.csv",
+      "sha256": "5ea774f15fa638ea342af4f503758237369e9dde96aa1edcde8268ce07f8d027",
+      "series": "MODIS",
+      "year": 2020,
+      "rows_read": 68384,
+      "rows_valid": 68384,
+      "rows_in_region": 1434
+    },
+    {
+      "file": "modis_2021_Mexico.csv",
+      "sha256": "258fee4f348d8c4a9223f4a83ce2adc39c7e18fc373cf740fe289e2a9a1d8ed2",
+      "series": "MODIS",
+      "year": 2021,
+      "rows_read": 67268,
+      "rows_valid": 67268,
+      "rows_in_region": 803
+    },
+    {
+      "file": "modis_2022_Mexico.csv",
+      "sha256": "83e785a14b12957b5d25fdc3fadb1e2a58ce11b953fdcbf0b4bf48ec89f9d297",
+      "series": "MODIS",
+      "year": 2022,
+      "rows_read": 61585,
+      "rows_valid": 61585,
+      "rows_in_region": 484
+    },
+    {
+      "file": "modis_2023_Mexico.csv",
+      "sha256": "84bef2841f2ffdcb1145acc0ed24b9c85fd0c5b470a5595ca5e92e7f0254112a",
+      "series": "MODIS",
+      "year": 2023,
+      "rows_read": 74676,
+      "rows_valid": 74676,
+      "rows_in_region": 808
+    },
+    {
+      "file": "modis_2024_Mexico.csv",
+      "sha256": "706b4a586c991cd11ac2d54766ab82c7fff21a5634b80974247579ba38a14aa9",
+      "series": "MODIS",
+      "year": 2024,
+      "rows_read": 80390,
+      "rows_valid": 80390,
+      "rows_in_region": 826
+    },
+    {
+      "file": "modis_2025_Mexico.csv",
+      "sha256": "7b51d687d999f347dc3679385d98795380cb42311936da6541e4c71a8007fd18",
+      "series": "MODIS",
+      "year": 2025,
+      "rows_read": 64966,
+      "rows_valid": 64966,
+      "rows_in_region": 1088
+    },
+    {
+      "file": "viirs-jpss1_2020_Mexico.csv",
+      "sha256": "2b3ec8e8f745e8fb09a19f75d4e465b2c9ceaa3ef16758a0c2af00f65e08ae60",
+      "series": "VIIRS_NOAA20",
+      "year": 2020,
+      "rows_read": 286798,
+      "rows_valid": 286798,
+      "rows_in_region": 4831
+    },
+    {
+      "file": "viirs-jpss1_2021_Mexico.csv",
+      "sha256": "b9072b8a8f712d9ab5010f2696616c629ce82040540d2c49371f88c25c286067",
+      "series": "VIIRS_NOAA20",
+      "year": 2021,
+      "rows_read": 286179,
+      "rows_valid": 286179,
+      "rows_in_region": 2906
+    },
+    {
+      "file": "viirs-jpss1_2022_Mexico.csv",
+      "sha256": "c8a95e2a52bb57982f8350c70799a0e873392eeb969b9bc7f37b4e8164560714",
+      "series": "VIIRS_NOAA20",
+      "year": 2022,
+      "rows_read": 275236,
+      "rows_valid": 275236,
+      "rows_in_region": 2303
+    },
+    {
+      "file": "viirs-jpss1_2023_Mexico.csv",
+      "sha256": "2c976d2448113cc0fe1fe88f5d8181b3f29424c8b263238b1aee353bfa655c66",
+      "series": "VIIRS_NOAA20",
+      "year": 2023,
+      "rows_read": 320740,
+      "rows_valid": 320740,
+      "rows_in_region": 3027
+    },
+    {
+      "file": "viirs-jpss1_2024_Mexico.csv",
+      "sha256": "05d06d10b4245a5425e625ecacbc5212d4c233ed97120faf8ce57238664fce06",
+      "series": "VIIRS_NOAA20",
+      "year": 2024,
+      "rows_read": 347959,
+      "rows_valid": 347959,
+      "rows_in_region": 3327
+    },
+    {
+      "file": "viirs-jpss1_2025_Mexico.csv",
+      "sha256": "258c2f38c617acf4f0627fa3de6e1029922640d1ed22418b3546cd5d39985e10",
+      "series": "VIIRS_NOAA20",
+      "year": 2025,
+      "rows_read": 272810,
+      "rows_valid": 272810,
+      "rows_in_region": 4951
+    },
+    {
+      "file": "viirs-snpp_2020_Mexico.csv",
+      "sha256": "2536b0bc3c525d76559707cba4a089eb4b81cbb0ef7a8a45fb17dedc49c226f4",
+      "series": "VIIRS_SNPP",
+      "year": 2020,
+      "rows_read": 290836,
+      "rows_valid": 290836,
+      "rows_in_region": 5089
+    },
+    {
+      "file": "viirs-snpp_2021_Mexico.csv",
+      "sha256": "4434553cb4ca687d1752baf519072d50b74fcfcc92c466eabed9a7c90046dc4e",
+      "series": "VIIRS_SNPP",
+      "year": 2021,
+      "rows_read": 292023,
+      "rows_valid": 292023,
+      "rows_in_region": 3158
+    },
+    {
+      "file": "viirs-snpp_2022_Mexico.csv",
+      "sha256": "876de3ba08e0cdbe5085e2cb49e40ca92df7ea5b7e4b2b3e7479656569e7ee18",
+      "series": "VIIRS_SNPP",
+      "year": 2022,
+      "rows_read": 275471,
+      "rows_valid": 275471,
+      "rows_in_region": 2147
+    },
+    {
+      "file": "viirs-snpp_2023_Mexico.csv",
+      "sha256": "790e6176f578f4b47741905d9c598a63cfd935c0fe879fff6cecca3adc3126a6",
+      "series": "VIIRS_SNPP",
+      "year": 2023,
+      "rows_read": 327657,
+      "rows_valid": 327657,
+      "rows_in_region": 3367
+    },
+    {
+      "file": "viirs-snpp_2024_Mexico.csv",
+      "sha256": "d6b2089e4f32509e4ecd8243f9296ec0138e00b22691599534d11bc58ab52bfd",
+      "series": "VIIRS_SNPP",
+      "year": 2024,
+      "rows_read": 330134,
+      "rows_valid": 330134,
+      "rows_in_region": 3291
+    },
+    {
+      "file": "viirs-snpp_2025_Mexico.csv",
+      "sha256": "794e5b4d51e1a1c716b562797faeb2dd530f32aa71a92a5e77a296a7f6bac3d1",
+      "series": "VIIRS_SNPP",
+      "year": 2025,
+      "rows_read": 276921,
+      "rows_valid": 276921,
+      "rows_in_region": 4689
+    },
+    {
+      "file": "power_monthly_T2M_-118.125_28.0_-112.5_32.5_1991-2025.json",
+      "variable": "T2M"
+    },
+    {
+      "file": "power_monthly_RH2M_-118.125_28.0_-112.5_32.5_1991-2025.json",
+      "variable": "RH2M"
+    },
+    {
+      "file": "power_monthly_PRECTOTCORR_-118.125_28.0_-112.5_32.5_1991-2025.json",
+      "variable": "PRECTOTCORR"
+    },
+    {
+      "file": "power_monthly_WS10M_-118.125_28.0_-112.5_32.5_1991-2025.json",
+      "variable": "WS10M"
+    }
+  ],
+  "exploratory_fire_weather_association": {
+    "note": "Same-month Spearman between fire seasonal percentile and weather anomaly percentile, 2020-2025. Descriptive only; not causal; no significance claimed (short, autocorrelated record).",
+    "results": [
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "PRECTOTCORR",
+        "n_months": 71,
+        "spearman": -0.414
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "RH2M",
+        "n_months": 72,
+        "spearman": -0.489
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "T2M",
+        "n_months": 72,
+        "spearman": 0.085
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "WS10M",
+        "n_months": 72,
+        "spearman": 0.274
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "PRECTOTCORR",
+        "n_months": 71,
+        "spearman": -0.451
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "RH2M",
+        "n_months": 72,
+        "spearman": -0.557
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "T2M",
+        "n_months": 72,
+        "spearman": 0.235
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "WS10M",
+        "n_months": 72,
+        "spearman": 0.211
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "PRECTOTCORR",
+        "n_months": 71,
+        "spearman": -0.448
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "RH2M",
+        "n_months": 72,
+        "spearman": -0.6
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "T2M",
+        "n_months": 72,
+        "spearman": 0.271
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "WS10M",
+        "n_months": 72,
+        "spearman": 0.124
+      }
+    ]
+  },
+  "limitations": [
+    {
+      "id": "raw_counts",
+      "en": "Raw MODIS and VIIRS hotspot counts are not directly comparable: resolution, sensitivity, overpass time and confidence definitions differ. Compare percentiles.",
+      "es": "Los conteos crudos de MODIS y VIIRS no son comparables directamente: difieren en resolución, sensibilidad, hora de paso y definición de confianza. Comparar percentiles."
+    },
+    {
+      "id": "hotspot_not_fire",
+      "en": "A hotspot is a hot pixel at overpass time, not an independent fire.",
+      "es": "Un punto de calor es un pixel caliente al paso del satélite, no un incendio independiente."
+    },
+    {
+      "id": "no_cause",
+      "en": "A thermal anomaly does not indicate cause, intent or criminal activity.",
+      "es": "Una anomalía térmica no indica causa, intención ni actividad criminal."
+    },
+    {
+      "id": "absence",
+      "en": "No detection does not prove absence of fire (clouds, timing, small fires).",
+      "es": "Que no haya detección no prueba que no hubo fuego (nubes, horario, incendios pequeños)."
+    },
+    {
+      "id": "short_record",
+      "en": "Fire percentiles use only 6 years (each month vs 5 others): 'above_range' means highest in this record, not a rare event.",
+      "es": "Los percentiles de fuego usan solo 6 años (cada mes contra otros 5): 'above_range' significa el más alto del registro, no un evento raro."
+    },
+    {
+      "id": "modis_collection",
+      "en": "MODIS is Collection 6.0 for 2020-2022 and 6.1 for 2023-2025.",
+      "es": "MODIS es Colección 6.0 en 2020-2022 y 6.1 en 2023-2025."
+    },
+    {
+      "id": "weather_regional",
+      "en": "Weather values are regional means of ~55 km reanalysis cells, not conditions at each fire. Fire-weather association is not causation.",
+      "es": "El clima es un promedio regional de celdas de reanálisis de ~55 km, no las condiciones en cada incendio. La asociación fuego-clima no implica causalidad."
+    },
+    {
+      "id": "precip_qc",
+      "en": "NASA POWER precipitation for 2020-06 is excluded (source artifact).",
+      "es": "La precipitación de NASA POWER de 2020-06 está excluida (error en la fuente)."
+    }
+  ],
+  "hotspot_properties": {
+    "series": "MODIS | VIIRS_SNPP | VIIRS_NOAA20",
+    "platform": "Terra, Aqua, Suomi NPP, NOAA-20",
+    "version": "FIRMS version (6.03 = MODIS C6.0, 61.03 = MODIS C6.1, 2 = VIIRS C2)",
+    "t": "acquisition time, UTC, YYYY-MM-DDTHH:MMZ",
+    "dn": "D day / N night",
+    "frp_mw": "fire radiative power, MW",
+    "bright_k": "brightness temperature, K (MODIS ch21/22, VIIRS I4)",
+    "conf": "confidence as distributed (MODIS 0-100, VIIRS l/n/h)",
+    "conf_class": "low/nominal/high (MODIS binned 0-29/30-79/80-100; not cross-sensor equivalent)",
+    "fire_type": "0 vegetation, 1 volcano, 2 static land source, 3 offshore",
+    "counted": "true if included in monthly metrics (fire_type filter)"
+  },
+  "files": [
+    "metadata.json",
+    "monthly.json",
+    "agreement.json",
+    "weather.json",
+    "hotspots_2020.geojson",
+    "hotspots_2021.geojson",
+    "hotspots_2022.geojson",
+    "hotspots_2023.geojson",
+    "hotspots_2024.geojson",
+    "hotspots_2025.geojson",
+    "methodology.md"
+  ]
+}
