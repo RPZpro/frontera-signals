@@ -1,7 +1,7 @@
 # Data contract — Fire Seasons pipeline
 
 Owner: Science & Engineering (Toño). Consumer: UI/Integration (Ricardo).
-Status: **v0.1 draft**. Input and loader output are implemented. The frontend
+Status: **v0.2 draft**. Input, loader, polygon filtering and the monthly table are implemented. The frontend
 outputs below are a proposal for Ricardo to review before implementation.
 
 ## 1. Inputs (NASA FIRMS CSV)
@@ -40,7 +40,32 @@ Validation rules:
   sensors are not touched here, because that is a harmonization question.
 - Each report stores the SHA-256 of the input file for reproducibility.
 
-## 3. Frontend outputs (proposal, not yet implemented)
+## 3. Geographic filtering (implemented)
+
+`fire_pipeline.regions`: a detection belongs to a region when its **pixel centre**
+intersects the polygon. Invalid polygons are rejected and never auto-repaired.
+Default region: `MX-BCN` (see `data/boundaries/SOURCES.md`).
+
+## 4. Monthly table (implemented, `fire_pipeline.aggregate.monthly_activity`)
+
+One row per region x sensor x UTC month. MODIS and VIIRS are never summed.
+
+| Column | Kind | Unit | Meaning |
+|---|---|---|---|
+| region_id, sensor, month | key | | `month` = `YYYY-MM` (UTC) |
+| days_in_month, days_covered, coverage_fraction | coverage | days | from **declared** download range |
+| quality | status | | `ok` / `partial_coverage` / `no_data` |
+| hotspot_count | raw | detections | original count, never scaled |
+| frp_sum_mw | raw | MW | sum of FRP |
+| active_cells | derived | cells | distinct 10 km EASE-Grid 2.0 (EPSG:6933) cells with >= 1 detection |
+| active_cell_days | derived | cell-days | distinct (cell, UTC day) pairs |
+
+- `no_data` means every metric is null. A covered month without detections means 0.
+- Partial months are flagged and **not** extrapolated.
+- `active_cells` reduces the pixel-size effect (VIIRS 375 m vs MODIS 1 km). It does
+  not make the sensors equivalent.
+
+## 5. Frontend outputs (proposal, not yet implemented)
 
 Common fields on every measurement:
 `region_id, sensor, period, source, product_version, unit, quality, metric_kind`
@@ -58,7 +83,7 @@ Unavailable values are `null`, never 0.
   PRECTOTCORR (mm/day), WS10M (m/s), with POWER grid resolution noted.
 - **methodology.md**: human-readable methods and limitations.
 
-## 4. Scientific limitations (must be shown in the UI)
+## 6. Scientific limitations (must be shown in the UI)
 
 - Raw MODIS and VIIRS counts are not directly comparable, because resolution,
   sensitivity, overpass time and confidence definitions all differ.
