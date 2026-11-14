@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  /* Night-side palette: a satellite's view of the ground after dark. */
+  --color-ground: #0e151f;
+  --color-panel: #151e2b;
+  --color-raised: #1c2737;
+  --color-line: #293750;
+  --color-ink: #ebe7df;
+  --color-soft: #b9c2d0;
+  --color-muted: #8a97ab;
+  --color-demo: #f0cf6a;
+  --color-modis: #3987b8;
+  --color-viirs: #c47b1c;
+
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo Variable", "Atkinson Hyperlegible", ui-sans-serif, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-stretch: 112%;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* "No data" is drawn as a hatch so it can never be read as a low value. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 4px,
+    color-mix(in srgb, var(--color-muted) 55%, transparent) 4px 5px
+  );
+  background-color: var(--color-ground);
+}
+
+.demo-stripe {
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-demo) 16%, transparent) 0 10px,
+    transparent 10px 20px
+  );
+}
+
+/* MapLibre controls and popup, restyled for the dark surface. */
+.maplibregl-popup-content {
+  background: var(--color-raised);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.maplibregl-popup-tip {
+  display: none;
+}
+.maplibregl-popup-close-button {
+  color: var(--color-soft);
+  font-size: 16px;
+  padding: 2px 6px;
+}
+.maplibregl-ctrl-attrib {
+  background: color-mix(in srgb, var(--color-ground) 80%, transparent) !important;
+  color: var(--color-soft) !important;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--color-soft);
+}
+.maplibregl-ctrl-group {
+  background: var(--color-raised) !important;
+  border: 1px solid var(--color-line);
+}
+.maplibregl-ctrl-scale {
+  background: color-mix(in srgb, var(--color-ground) 80%, transparent) !important;
+  border-color: var(--color-soft) !important;
+  color: var(--color-soft) !important;
+}
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--color-line);
+}
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
