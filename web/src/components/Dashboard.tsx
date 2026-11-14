@@ -3,10 +3,12 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { BurningCalendar } from "@/components/BurningCalendar";
+import { EnvironmentalContext } from "@/components/EnvironmentalContext";
 import { EvidenceInspector } from "@/components/EvidenceInspector";
 import { ExportControls } from "@/components/ExportControls";
 import { MonthReadout } from "@/components/MonthReadout";
 import { RegionSelector } from "@/components/RegionSelector";
+import { SensorAgreementExplorer } from "@/components/SensorAgreementExplorer";
 import { SensorSelector } from "@/components/SensorSelector";
 import { loadDataset, type Dataset } from "@/lib/data";
 import { SelectionProvider, useSelection } from "@/lib/selection";
@@ -55,6 +57,12 @@ function Explorer({ data }: { data: Dataset }) {
           <FireMap regions={data.metadata.regions} hotspots={data.hotspots} record={record} synthetic={synthetic} />
           <div className="lg:col-span-2">
             <MonthReadout metadata={data.metadata} record={record} />
+          </div>
+          <div className="lg:col-span-2">
+            <SensorAgreementExplorer monthly={data.monthly} />
+          </div>
+          <div className="lg:col-span-2">
+            <EnvironmentalContext weather={data.weather} />
           </div>
           <EvidenceInspector metadata={data.metadata} record={record} />
           <ExportControls metadata={data.metadata} monthly={data.monthly} hotspots={data.hotspots} />

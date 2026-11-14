@@ -269,7 +269,51 @@ const metadata = {
   ],
 };
 
+// --- synthetic weather context (stands in for NASA POWER monthly means) -------
+// Generated after everything else so the hotspot fixtures stay byte-identical.
+const CLIMATE = {
+  // per region, Jan..Dec: [T2M °C, RH2M %, PRECTOTCORR mm/day, WS10M m/s]
+  "tijuana-tecate": { t: [13.5, 14, 14.8, 16, 17.6, 19.4, 21.8, 22.6, 21.9, 19.2, 16, 13.6], rh: [62, 64, 66, 66, 69, 72, 73, 73, 71, 66, 60, 60], p: [1.6, 1.8, 1.5, 0.6, 0.15, 0.03, 0.02, 0.03, 0.12, 0.4, 0.9, 1.4], w: [3.1, 3.3, 3.5, 3.6, 3.5, 3.3, 3.1, 3.0, 2.9, 2.9, 3.0, 3.1] },
+  ensenada: { t: [13, 13.4, 14.2, 15.3, 16.8, 18.6, 20.9, 21.8, 21, 18.5, 15.4, 13.1], rh: [64, 66, 68, 68, 71, 74, 75, 75, 72, 67, 62, 62], p: [1.5, 1.7, 1.4, 0.5, 0.1, 0.02, 0.02, 0.03, 0.1, 0.35, 0.8, 1.3], w: [3.4, 3.6, 3.9, 4.0, 3.9, 3.6, 3.3, 3.2, 3.1, 3.1, 3.2, 3.4] },
+  "mexicali-valley": { t: [13.2, 15.6, 18.9, 22.4, 27, 31.8, 34.2, 33.8, 30.6, 24.2, 17.4, 12.9], rh: [44, 39, 33, 27, 23, 21, 30, 35, 34, 34, 39, 45], p: [0.35, 0.3, 0.25, 0.08, 0.02, 0.01, 0.12, 0.3, 0.25, 0.2, 0.2, 0.35], w: [2.4, 2.7, 3.1, 3.4, 3.5, 3.4, 3.1, 2.9, 2.7, 2.5, 2.4, 2.3] },
+};
+const WEATHER_GAPS = new Set(["2019-06"]); // exercises the "no data" state
+const weather = [];
+for (const region of REGIONS) {
+  const c = CLIMATE[region.region_id];
+  for (const year of YEARS) {
+    for (let m = 1; m <= 12; m += 1) {
+      const period = `${year}-${pad(m)}`;
+      const base = { region_id: region.region_id, period, source: SYNTHETIC_SOURCE };
+      if (WEATHER_GAPS.has(period)) {
+        weather.push({ ...base, quality: "no_data", t2m_c: null, rh2m_pct: null, prectotcorr_mm_day: null, ws10m_m_s: null });
+        continue;
+      }
+      weather.push({
+        ...base,
+        quality: "ok",
+        t2m_c: round(c.t[m - 1] + gauss() * 0.9, 1),
+        rh2m_pct: round(Math.min(98, Math.max(8, c.rh[m - 1] + gauss() * 4)), 0),
+        prectotcorr_mm_day: round(Math.max(0, c.p[m - 1] * (0.3 + rand() * 1.6)), 2),
+        ws10m_m_s: round(Math.max(0.5, c.w[m - 1] + gauss() * 0.3), 1),
+      });
+    }
+  }
+}
+const weatherFile = {
+  data_status: "synthetic_demo",
+  grid_resolution_note: "Synthetic. NASA POWER meteorology is distributed on a 0.5° × 0.625° grid; the real file must state how grid cells map to each region.",
+  variables: {
+    t2m_c: { label: "Air temperature at 2 m", unit: "°C", power_parameter: "T2M" },
+    rh2m_pct: { label: "Relative humidity at 2 m", unit: "%", power_parameter: "RH2M" },
+    prectotcorr_mm_day: { label: "Precipitation", unit: "mm/day", power_parameter: "PRECTOTCORR" },
+    ws10m_m_s: { label: "Wind speed at 10 m", unit: "m/s", power_parameter: "WS10M" },
+  },
+  records: weather,
+};
+
 mkdirSync(OUT, { recursive: true });
+writeFileSync(join(OUT, "weather.json"), JSON.stringify(weatherFile) + "\n");
 writeFileSync(join(OUT, "metadata.json"), JSON.stringify(metadata, null, 2) + "\n");
 writeFileSync(join(OUT, "monthly.json"), JSON.stringify({ data_status: "synthetic_demo", records: monthly }) + "\n");
 writeFileSync(

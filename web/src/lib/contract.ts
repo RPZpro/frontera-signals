@@ -125,3 +125,26 @@ export interface HotspotCollection {
   data_status?: DataStatus;
   features: HotspotFeature[];
 }
+
+/** NASA POWER monthly means. Field names are a FRONTEND PROPOSAL (see ARCHITECTURE.md). */
+export type WeatherKey = "t2m_c" | "rh2m_pct" | "prectotcorr_mm_day" | "ws10m_m_s";
+
+export interface WeatherRecord {
+  region_id: string;
+  /** UTC month, "YYYY-MM". */
+  period: string;
+  source: string;
+  quality: Quality;
+  t2m_c: number | null;
+  rh2m_pct: number | null;
+  prectotcorr_mm_day: number | null;
+  ws10m_m_s: number | null;
+}
+
+/** weather.json is optional in the contract: the app must work without it. */
+export interface WeatherFile {
+  data_status: DataStatus;
+  grid_resolution_note: string;
+  variables: Record<WeatherKey, { label: string; unit: string; power_parameter: string }>;
+  records: WeatherRecord[];
+}

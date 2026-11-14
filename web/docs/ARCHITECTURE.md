@@ -28,6 +28,8 @@ web/
       BurningCalendar.tsx  years × months grid for the selected sensor
       FireMap.tsx          MapLibre map of hot pixels for the selected month
       MonthReadout.tsx     figures, units, raw/derived, source and coverage
+      SensorAgreementExplorer.tsx  MODIS and VIIRS side by side, separate scales, no agreement score
+      EnvironmentalContext.tsx     monthly weather small multiples (optional weather.json)
       EvidenceInspector.tsx  provenance: status, product, input files + SHA-256, definitions, raw record
       ExportControls.tsx   CSV downloads and the printable HTML evidence report
 ```
@@ -59,11 +61,15 @@ it with `useSelection()`, so they cannot drift apart. The selection is written t
   HTML evidence report). Exports carry the data status in the file name and in every row,
   and leave unavailable values empty.
 
+- Slice 3: SensorAgreementExplorer and EnvironmentalContext (Recharts). The explorer shows
+  the two sensors side by side on separate scales and deliberately computes **no agreement
+  score**. Weather is shown as context only, on synthetic values, and the section degrades
+  to a notice when weather.json is absent.
+
 ## Next slices
 
-1. SensorAgreementExplorer (side-by-side MODIS / VIIRS, never summed) — needs Toño's agreement metric.
-2. EnvironmentalContext (weather.json, NASA POWER) with Recharts.
-3. Swap fixtures for real pipeline output; Vercel deploy.
+1. Agreement metric in the SensorAgreementExplorer, once Toño defines and verifies it.
+2. Swap fixtures for real pipeline output; Vercel deploy.
 
 ## Open questions for Toño (contract v0.1)
 
@@ -85,4 +91,9 @@ These are proposals. Nothing here should be treated as agreed until Toño confir
 7. **`input_files`** is typed as the pipeline's `ValidationReport.to_dict()` (source_file, sha256,
    sensor, rows_read, rows_valid, dropped, duplicates_removed, versions, platforms, date_min,
    date_max). Can the pipeline write its reports there unchanged?
-8. **Suomi NPP vs NOAA-20** for VIIRS: the UI displays whatever `platforms` the metadata lists.
+8. **`weather.json` shape.** Proposed: `{ data_status, grid_resolution_note, variables, records }`
+   with records `{ region_id, period, source, quality, t2m_c, rh2m_pct, prectotcorr_mm_day,
+   ws10m_m_s }`. Are these field names fine, and how are POWER grid cells mapped to a region?
+9. **Agreement metric.** What will the pipeline compute to compare MODIS and VIIRS (for
+   example on the common grid), and in which file? Until then the UI shows no score.
+10. **Suomi NPP vs NOAA-20** for VIIRS: the UI displays whatever `platforms` the metadata lists.

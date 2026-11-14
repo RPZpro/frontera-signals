@@ -1,4 +1,4 @@
-import type { HotspotCollection, Metadata, MonthlyFile, MonthlyRecord, Sensor } from "./contract";
+import type { HotspotCollection, Metadata, MonthlyFile, MonthlyRecord, Sensor, WeatherFile } from "./contract";
 
 /** Folder under /public that holds the pipeline outputs. Swap to the real export when Toño publishes it. */
 export const DATA_BASE = process.env.NEXT_PUBLIC_DATA_BASE ?? "/data/demo";
@@ -7,6 +7,8 @@ export interface Dataset {
   metadata: Metadata;
   monthly: MonthlyRecord[];
   hotspots: HotspotCollection;
+  /** Optional in the contract. null when the pipeline did not publish weather.json. */
+  weather: WeatherFile | null;
 }
 
 async function getJson<T>(file: string): Promise<T> {
@@ -21,7 +23,9 @@ export async function loadDataset(): Promise<Dataset> {
     getJson<MonthlyFile>("monthly.json"),
     getJson<HotspotCollection>("hotspots.geojson"),
   ]);
-  return { metadata, monthly: monthlyFile.records, hotspots };
+  // weather.json is optional: a missing or broken file must not take the app down.
+  const weather = await getJson<WeatherFile>("weather.json").catch(() => null);
+  return { metadata, monthly: monthlyFile.records, hotspots, weather };
 }
 
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
