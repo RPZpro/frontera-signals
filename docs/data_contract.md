@@ -1,7 +1,7 @@
 # Data contract — Fire Seasons pipeline
 
 Owner: Science & Engineering (Toño). Consumer: UI/Integration (Ricardo).
-Status: **v0.4 draft**. Input, loader, polygon filtering and the monthly table are implemented and have been
+Status: **v0.5 draft**. Input, loader, polygon filtering and the monthly table are implemented and have been
 run on real 2020–2025 data (`python -m fire_pipeline.run_monthly`, outputs in `data/processed/`). The frontend
 outputs below are a proposal for Ricardo to review before implementation.
 
@@ -90,7 +90,25 @@ The counts that were excluded are listed in `run_report.json`.
 with correlations, percentile differences, kappa, ratio, and an `assessment` that includes
 notes for the UI. Method and results are in `docs/methodology.md`.
 
-## 6. Frontend outputs (proposal, not yet implemented)
+## 6. Weather context (implemented, `run_weather`)
+
+`data/processed/weather_<tag>.csv`: one row per region x month x variable, 1991–2025.
+
+| Column | Kind | Meaning |
+|---|---|---|
+| region_id, month, cal_month, variable | key | variable ∈ T2M, RH2M, PRECTOTCORR, WS10M |
+| unit | | °C, %, mm/day, m/s (as returned by POWER) |
+| value | derived | area-weighted mean of MERRA-2 native cells |
+| normal_period, normal_mean | derived | 1991–2020 calendar-month mean |
+| anomaly, anomaly_pct | derived | value − normal; percentile within the normal years |
+| n_cells, valid_weight_fraction | coverage | |
+| quality | status | `ok` / `partial_coverage` / `no_data` / `qc_excluded` |
+| source | | NASA POWER API version + MERRA-2 |
+
+`data/processed/weather_report.json`: cell weights, QC exclusions, and the exploratory
+association between fire and weather (descriptive only).
+
+## 7. Frontend outputs (proposal, not yet implemented)
 
 Common fields on every measurement:
 `region_id, sensor, period, source, product_version, unit, quality, metric_kind`
@@ -108,7 +126,7 @@ Unavailable values are `null`, never 0.
   PRECTOTCORR (mm/day), WS10M (m/s), with POWER grid resolution noted.
 - **methodology.md**: human-readable methods and limitations.
 
-## 7. Scientific limitations (must be shown in the UI)
+## 8. Scientific limitations (must be shown in the UI)
 
 - Raw MODIS and VIIRS counts are not directly comparable, because resolution,
   sensitivity, overpass time and confidence definitions all differ.

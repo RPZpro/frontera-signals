@@ -39,3 +39,20 @@ Obtained 2026-11-14 (the team downloaded the MODIS and NOAA-20 files; Suomi NPP 
 | `firms/viirs/viirs-snpp_2023_Mexico.csv` | 327657 | 2 | `790e6176f578f4b47741905d9c598a63cfd935c0fe879fff6cecca3adc3126a6` |
 | `firms/viirs/viirs-snpp_2024_Mexico.csv` | 330134 | 2 | `d6b2089e4f32509e4ecd8243f9296ec0138e00b22691599534d11bc58ab52bfd` |
 | `firms/viirs/viirs-snpp_2025_Mexico.csv` | 276921 | 2 | `794e5b4d51e1a1c716b562797faeb2dd530f32aa71a92a5e77a296a7f6bac3d1` |
+
+# NASA POWER (committed, `data/raw/power/`)
+
+Monthly & Annual API v2.10.0, regional endpoint, community AG, MERRA-2 native grid
+(0.5° × 0.625°). Cell centres lon −118.125…−112.5, lat 28.0…32.5 (100 cells, 46 intersect
+MX-BCN). Years 1991–2025. Downloaded 2026-11-14 by `python -m fire_pipeline.run_weather`.
+Request: `https://power.larc.nasa.gov/api/temporal/monthly/regional?parameters=<VAR>&community=AG&longitude-min=-118.125&longitude-max=-112.5&latitude-min=28.0&latitude-max=32.5&start=1991&end=2025&format=json`
+
+Known artifact: PRECTOTCORR 2020-06, with 2,110 mm on 2020-06-10 at −115.0/28.5 (daily API).
+It is excluded by QC; see `docs/methodology.md`.
+
+| File | SHA-256 |
+|---|---|
+| `power/power_monthly_PRECTOTCORR_-118.125_28.0_-112.5_32.5_1991-2025.json` | `24c5c187785f0c663c8677e9550e0386756b687d95446544a86b48d036d78eb4` |
+| `power/power_monthly_RH2M_-118.125_28.0_-112.5_32.5_1991-2025.json` | `37df04b0023aaf0618effb69c736e841fe912cd32d1a51fec4a2f1ce536b0666` |
+| `power/power_monthly_T2M_-118.125_28.0_-112.5_32.5_1991-2025.json` | `e8215ecf21458e8d2bfaa9065d54f6b44bf5fc952e8179e09e9fb0b9dbaffbef` |
+| `power/power_monthly_WS10M_-118.125_28.0_-112.5_32.5_1991-2025.json` | `b732e6d99f4511e108e00c335cf20bf664da3e3403229cf5ce86ca0d27073a3f` |

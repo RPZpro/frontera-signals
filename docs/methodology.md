@@ -12,6 +12,7 @@ Region: Baja California, Mexico (`MX-BCN`). Period: 2020-01 to 2025-12 (UTC).
 | VIIRS Suomi NPP active fire, 375 m | VNP14IMG via FIRMS | C2 (`2`) | FIRMS yearly country files |
 | VIIRS NOAA-20 active fire, 375 m | VJ114IMG via FIRMS | C2 (`2`) | FIRMS yearly country files |
 | Baja California boundary | geoBoundaries ADM1 (source INEGI 2020) | gbOpen 90a1d52 | geoBoundaries |
+| Weather: T2M, RH2M, PRECTOTCORR, WS10M | NASA POWER monthly, MERRA-2 native 0.5° × 0.625° | API v2.10.0, 1991–2025 | power.larc.nasa.gov |
 
 URLs and SHA-256 hashes: `data/raw/SOURCES.md` and `data/boundaries/SOURCES.md`.
 All inputs are standard-processing (not NRT) files.
@@ -23,6 +24,7 @@ Reproduce everything with:
 ```
 python -m fire_pipeline.run_monthly     # stages 1–2
 python -m fire_pipeline.run_seasonal    # stages 3–5
+python -m fire_pipeline.run_weather     # environmental context (add --offline to use cached JSON)
 ```
 
 1. **Ingest and validate** (`loader.py`). Schema check, physical bounds,
@@ -56,6 +58,20 @@ python -m fire_pipeline.run_seasonal    # stages 3–5
    on `above_range` flags, and the ratio between series. Stage 5 rules are written in
    the code (`ASSESSMENT_RULES`).
 
+8. **Environmental context** (`weather.py`). NASA POWER monthly values on the
+   MERRA-2 native grid. The regional value is the **area-weighted mean** of the 46 native
+   cells that intersect Baja California (weights = intersection area in EPSG:6933). Nothing
+   is interpolated or downscaled. Anomalies are computed per calendar month against the
+   **1991–2020 normal** (WMO standard): `anomaly = value − normal mean`, plus a mid-rank
+   percentile within the 30 normal years. Each calendar month needs at least 80 % of the
+   normal years to be valid.
+   - **QC:** if any native cell has a monthly mean above 30 mm/day of PRECTOTCORR, the whole
+     variable-month is set to null (`qc_excluded`). This removes a source artifact,
+     **PRECTOTCORR 2020-06**, which has 2,110 mm on 2020-06-10 at −115.0/28.5 according to
+     the POWER daily API. That is physically impossible, and it gives monthly means up to
+     151 mm/day, while every other cell-month in 1991–2025 is ≤ 11.8 mm/day (Jan 1993).
+     No replacement value is created.
+
 ## 3. Results (2020–2025, 72 months)
 
 Seasonal cycle: the main activity is in **June–October** for all three series
@@ -82,6 +98,24 @@ Interpretation:
 - Months that were records in all three series: 2020-06, 2021-04, 2022-02,
   2023-11, 2024-08, 2025-01.
 
+### Environmental context (exploratory, not causal)
+
+Same-month Spearman between a month's fire percentile (`active_cells`) and its weather
+anomaly percentile (vs 1991–2020), 2020–2025:
+
+| Variable | MODIS | VIIRS NOAA-20 | VIIRS SNPP |
+|---|---|---|---|
+| RH2M (humidity) | −0.49 | −0.56 | −0.60 |
+| PRECTOTCORR (precipitation) | −0.41 | −0.45 | −0.45 |
+| WS10M (wind) | +0.27 | +0.21 | +0.12 |
+| T2M (temperature) | +0.09 | +0.24 | +0.27 |
+
+Months that are more active than usual for their season tend to be drier than normal.
+All three sensors show the same pattern. In 5 of the 6 months that were records in all
+three series, RH2M was at or below the 27th percentile of its normal (for example 2022-02
+and 2021-04 at 6.7 %). This is an association. It does not establish causation, and no
+significance is claimed.
+
 ## 4. Limitations
 
 - **Short record.** 6 years means each month is compared against only 5 others. By
@@ -102,3 +136,8 @@ Interpretation:
   mean that no detection does not prove there was no fire. A thermal anomaly says nothing
   about cause, intent or criminal activity.
 - The `type` classification comes from FIRMS. It is not re-derived or validated here.
+- **Weather is a regional mean** over about 73,000 km² that includes coast, mountains and
+  desert, using roughly 55 km reanalysis cells. It describes regional conditions, not the
+  weather at each fire. MERRA-2 is a reanalysis, not station observations.
+- POWER months are in local solar time and FIRMS months are in UTC. The difference
+  (~8 h) is negligible at monthly scale.

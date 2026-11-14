@@ -1,0 +1,473 @@
+{
+  "api": "https://power.larc.nasa.gov/api/temporal/monthly/regional",
+  "community": "AG",
+  "bbox_cell_centres": [
+    -118.125,
+    28.0,
+    -112.5,
+    32.5
+  ],
+  "grid": {
+    "dlon": 0.625,
+    "dlat": 0.5,
+    "source": "MERRA-2 native"
+  },
+  "years": [
+    1991,
+    2025
+  ],
+  "normal_period": [
+    1991,
+    2020
+  ],
+  "variables": [
+    {
+      "variable": "T2M",
+      "unit": "C",
+      "longname": "Temperature at 2 Meters",
+      "sources": [
+        "MERRA2"
+      ],
+      "api_version": "v2.10.0",
+      "time_standard": "LST",
+      "start": "19910101",
+      "end": "20251231",
+      "file": "power_monthly_T2M_-118.125_28.0_-112.5_32.5_1991-2025.json"
+    },
+    {
+      "variable": "RH2M",
+      "unit": "%",
+      "longname": "Relative Humidity at 2 Meters",
+      "sources": [
+        "MERRA2",
+        "POWER"
+      ],
+      "api_version": "v2.10.0",
+      "time_standard": "LST",
+      "start": "19910101",
+      "end": "20251231",
+      "file": "power_monthly_RH2M_-118.125_28.0_-112.5_32.5_1991-2025.json"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "unit": "mm/day",
+      "longname": "Precipitation Corrected",
+      "sources": [
+        "MERRA2"
+      ],
+      "api_version": "v2.10.0",
+      "time_standard": "LST",
+      "start": "19910101",
+      "end": "20251231",
+      "file": "power_monthly_PRECTOTCORR_-118.125_28.0_-112.5_32.5_1991-2025.json"
+    },
+    {
+      "variable": "WS10M",
+      "unit": "m/s",
+      "longname": "Wind Speed at 10 Meters",
+      "sources": [
+        "MERRA2",
+        "POWER"
+      ],
+      "api_version": "v2.10.0",
+      "time_standard": "LST",
+      "start": "19910101",
+      "end": "20251231",
+      "file": "power_monthly_WS10M_-118.125_28.0_-112.5_32.5_1991-2025.json"
+    }
+  ],
+  "cell_weights": [
+    {
+      "region_id": "MX-BCN",
+      "lon": -118.125,
+      "lat": 29.0,
+      "weight": 0.0020499545709929123
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -117.5,
+      "lat": 32.5,
+      "weight": 2.2071941888388504e-05
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.875,
+      "lat": 31.5,
+      "weight": 0.0038227443732280516
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.875,
+      "lat": 32.0,
+      "weight": 0.016621727403614183
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.875,
+      "lat": 32.5,
+      "weight": 0.022943928359882924
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.25,
+      "lat": 30.5,
+      "weight": 0.00449998662302728
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.25,
+      "lat": 31.0,
+      "weight": 0.022744399863507122
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.25,
+      "lat": 31.5,
+      "weight": 0.042119546464942544
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.25,
+      "lat": 32.0,
+      "weight": 0.04494463789751192
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -116.25,
+      "lat": 32.5,
+      "weight": 0.031916661017471724
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 28.0,
+      "weight": 0.00023826216698445878
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 28.5,
+      "weight": 4.808930640099939e-05
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 29.5,
+      "weight": 0.006312137243395968
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 30.0,
+      "weight": 0.03255231232784276
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 30.5,
+      "weight": 0.043382284023804486
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 31.0,
+      "weight": 0.04541846108986432
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 31.5,
+      "weight": 0.045183273812435795
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 32.0,
+      "weight": 0.04494463789751331
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.625,
+      "lat": 32.5,
+      "weight": 0.03611322403683824
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 28.0,
+      "weight": 0.0032497340046226237
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 28.5,
+      "weight": 0.0011596292030936766
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 29.0,
+      "weight": 0.0016258157941927917
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 29.5,
+      "weight": 0.035116198737000864
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 30.0,
+      "weight": 0.04587842963347718
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 30.5,
+      "weight": 0.045440547508314444
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 31.0,
+      "weight": 0.03754284459750765
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 31.5,
+      "weight": 0.03458289062586852
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 32.0,
+      "weight": 0.02732212515282197
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -115.0,
+      "lat": 32.5,
+      "weight": 0.02719313350969326
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -114.375,
+      "lat": 28.0,
+      "weight": 0.0012559866518435166
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -114.375,
+      "lat": 28.5,
+      "weight": 0.005413396741898403
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -114.375,
+      "lat": 29.0,
+      "weight": 0.036255898340433565
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -114.375,
+      "lat": 29.5,
+      "weight": 0.04448448455078205
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -114.375,
+      "lat": 30.0,
+      "weight": 0.011928970812025885
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -114.375,
+      "lat": 30.5,
+      "weight": 0.0021957642504621903
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -114.375,
+      "lat": 31.5,
+      "weight": 0.00018380999657727565
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.75,
+      "lat": 28.0,
+      "weight": 0.023119342571538904
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.75,
+      "lat": 28.5,
+      "weight": 0.046394817647472664
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.75,
+      "lat": 29.0,
+      "weight": 0.03928635439484512
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.75,
+      "lat": 29.5,
+      "weight": 0.01724457683705278
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.125,
+      "lat": 28.0,
+      "weight": 0.023278847633491976
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.125,
+      "lat": 28.5,
+      "weight": 0.03153207251545602
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.125,
+      "lat": 29.0,
+      "weight": 0.008688924146941663
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -113.125,
+      "lat": 29.5,
+      "weight": 0.0032179154396822195
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -112.5,
+      "lat": 28.0,
+      "weight": 0.00034472183116549985
+    },
+    {
+      "region_id": "MX-BCN",
+      "lon": -112.5,
+      "lat": 28.5,
+      "weight": 0.00018442645059515373
+    }
+  ],
+  "aggregation": "area-weighted mean of native cells, intersection areas in EPSG:6933",
+  "qc": {
+    "plausible_max_cell_monthly_mean": {
+      "PRECTOTCORR": 30.0
+    },
+    "excluded": [
+      {
+        "variable": "PRECTOTCORR",
+        "month": "2020-06",
+        "n_cells_over": 15,
+        "max_value": 151.36
+      }
+    ],
+    "note": "Whole variable-month set to null when any native cell exceeds the bound (source artifact, e.g. PRECTOTCORR 2020-06 with 2110 mm on 2020-06-10 at -115.0/28.5 in the POWER daily API)."
+  },
+  "association_exploratory": {
+    "note": "Same-month Spearman between fire seasonal percentile and weather anomaly percentile, 2020-2025. Descriptive only; not causal; no significance claimed (short, autocorrelated record).",
+    "results": [
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "PRECTOTCORR",
+        "n_months": 71,
+        "spearman": -0.414
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "RH2M",
+        "n_months": 72,
+        "spearman": -0.489
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "T2M",
+        "n_months": 72,
+        "spearman": 0.085
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "MODIS",
+        "metric": "active_cells",
+        "variable": "WS10M",
+        "n_months": 72,
+        "spearman": 0.274
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "PRECTOTCORR",
+        "n_months": 71,
+        "spearman": -0.451
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "RH2M",
+        "n_months": 72,
+        "spearman": -0.557
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "T2M",
+        "n_months": 72,
+        "spearman": 0.235
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_NOAA20",
+        "metric": "active_cells",
+        "variable": "WS10M",
+        "n_months": 72,
+        "spearman": 0.211
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "PRECTOTCORR",
+        "n_months": 71,
+        "spearman": -0.448
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "RH2M",
+        "n_months": 72,
+        "spearman": -0.6
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "T2M",
+        "n_months": 72,
+        "spearman": 0.271
+      },
+      {
+        "region_id": "MX-BCN",
+        "series": "VIIRS_SNPP",
+        "metric": "active_cells",
+        "variable": "WS10M",
+        "n_months": 72,
+        "spearman": 0.124
+      }
+    ]
+  }
+}
