@@ -1,7 +1,7 @@
 # Data contract — Fire Seasons pipeline
 
 Owner: Science & Engineering (Toño). Consumer: UI/Integration (Ricardo).
-Status: **v0.3 draft**. Input, loader, polygon filtering and the monthly table are implemented and have been
+Status: **v0.4 draft**. Input, loader, polygon filtering and the monthly table are implemented and have been
 run on real 2020–2025 data (`python -m fire_pipeline.run_monthly`, outputs in `data/processed/`). The frontend
 outputs below are a proposal for Ricardo to review before implementation.
 
@@ -73,7 +73,24 @@ The counts that were excluded are listed in `run_report.json`.
 - `active_cells` reduces the pixel-size effect (VIIRS 375 m vs MODIS 1 km). It does
   not make the sensors equivalent.
 
-## 5. Frontend outputs (proposal, not yet implemented)
+## 5. Seasonal percentiles and agreement (implemented, `run_seasonal`)
+
+`data/processed/seasonal_<tag>.csv`: long format, one row per region x series x month x metric.
+
+| Column | Kind | Meaning |
+|---|---|---|
+| region_id, series, sensor, month, cal_month, metric | key | `metric` ∈ active_cells, active_cell_days, hotspot_count, frp_sum_mw |
+| value | raw/derived | the monthly value (same kind as the metric) |
+| ref_period, n_ref | derived | reference years and number of other years compared (leave-one-out) |
+| ref_median, ref_min, ref_max | derived | other years, same calendar month, same series |
+| percentile | derived | mid-rank empirical percentile, 0–100, sensor-specific |
+| activity_class | derived | `above_range` / `within_range` / `below_range` / `not_evaluated` / `insufficient_reference` |
+
+`data/processed/agreement_<tag>.json`: one entry per region x metric x pair of series,
+with correlations, percentile differences, kappa, ratio, and an `assessment` that includes
+notes for the UI. Method and results are in `docs/methodology.md`.
+
+## 6. Frontend outputs (proposal, not yet implemented)
 
 Common fields on every measurement:
 `region_id, sensor, period, source, product_version, unit, quality, metric_kind`
@@ -91,7 +108,7 @@ Unavailable values are `null`, never 0.
   PRECTOTCORR (mm/day), WS10M (m/s), with POWER grid resolution noted.
 - **methodology.md**: human-readable methods and limitations.
 
-## 6. Scientific limitations (must be shown in the UI)
+## 7. Scientific limitations (must be shown in the UI)
 
 - Raw MODIS and VIIRS counts are not directly comparable, because resolution,
   sensitivity, overpass time and confidence definitions all differ.
