@@ -2,6 +2,7 @@
 
 import { SENSOR_LABEL, type HotspotFeature, type Metadata, type MonthlyRecord, type WeatherFile } from "@/lib/contract";
 import { download, evidenceReportHtml, exportName, hotspotsCsv, monthlyCsv } from "@/lib/export";
+import type { EnvironmentalAnalysis } from "@/lib/environmentalAnomaly";
 import { useSelection } from "@/lib/selection";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
   monthly: MonthlyRecord[];
   features: HotspotFeature[] | null;
   weather: WeatherFile | null;
+  analysis: EnvironmentalAnalysis;
   pointsFailed: boolean;
 }
 
@@ -16,7 +18,7 @@ const button =
   "h-11 rounded-md border border-line bg-raised px-4 text-left text-sm font-bold text-ink hover:border-soft disabled:cursor-not-allowed disabled:font-normal disabled:text-muted disabled:hover:border-line";
 
 /** Downloads for exactly what is on screen: same region, sensor and month. */
-export function ExportControls({ metadata, monthly, features, weather, pointsFailed }: Props) {
+export function ExportControls({ metadata, monthly, features, weather, analysis, pointsFailed }: Props) {
   const { regionId, sensor, year, month, period } = useSelection();
   const region = metadata.regions.find((r) => r.region_id === regionId) ?? metadata.regions[0];
   const records = monthly.filter((r) => r.region_id === regionId && r.sensor === sensor);
@@ -51,7 +53,7 @@ export function ExportControls({ metadata, monthly, features, weather, pointsFai
           onClick={() =>
             download(
               exportName(metadata, [regionId, sensor, period, "evidence-report"], "html"),
-              evidenceReportHtml({ metadata, region, sensor, year, month, records, record, weather, viewUrl: window.location.href }),
+              evidenceReportHtml({ metadata, region, sensor, year, month, records, record, weather, analysis, viewUrl: window.location.href }),
               "text/html",
             )
           }
@@ -60,7 +62,7 @@ export function ExportControls({ metadata, monthly, features, weather, pointsFai
         </button>
       </div>
       <p className="max-w-[68ch] text-sm text-muted">
-        Files cover {region.name} and {SENSOR_LABEL[sensor]}. Unavailable CSV values are left empty.
+        CSVs cover {region.name} and {SENSOR_LABEL[sensor]}. The report also compares seasonal classifications across series.
         {metadata.data_status !== "nasa_firms" && " Every file is marked as synthetic demo data in its name and contents."}
       </p>
     </section>

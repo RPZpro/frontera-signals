@@ -1,5 +1,6 @@
 import { SENSOR_LABEL, WEATHER_KEYS, type HotspotFeature, type Metadata, type MetricKey, type MonthlyRecord, type Region, type Sensor, type WeatherFile } from "./contract";
 import { MONTHS, MONTHS_LONG, toPeriod, yearsIn } from "./data";
+import { ANOMALY_LIMITS, ANOMALY_METHOD, type EnvironmentalAnalysis } from "./environmentalAnomaly";
 
 const METRICS: MetricKey[] = ["hotspot_count", "frp_sum_mw", "active_cells", "percentile_vs_reference"];
 
@@ -77,11 +78,12 @@ interface ReportInput {
   records: MonthlyRecord[];
   record: MonthlyRecord | undefined;
   weather: WeatherFile | null;
+  analysis: EnvironmentalAnalysis;
   viewUrl: string;
 }
 
 /** Self-contained, printable HTML report for the current view. Light page so it prints cleanly. */
-export function evidenceReportHtml({ metadata, region, sensor, year, month, records, record, weather, viewUrl }: ReportInput): string {
+export function evidenceReportHtml({ metadata, region, sensor, year, month, records, record, weather, analysis, viewUrl }: ReportInput): string {
   const synthetic = isSynthetic(metadata);
   const cov = metadata.sensors[sensor];
   const byPeriod = new Map(records.map((r) => [r.period, r]));
@@ -96,6 +98,16 @@ export function evidenceReportHtml({ metadata, region, sensor, year, month, reco
     const anomaly = detail?.anomaly;
     return `<tr><th scope="row">${esc(variable.label)}</th><td>${value == null ? "Unavailable" : esc(value)}</td><td>${esc(variable.unit)}</td><td>${esc(detail?.quality ?? conditions.quality)}</td><td>${anomaly == null ? "Unavailable" : esc(`${anomaly} (${detail?.normal_period} normal)`)}</td></tr>`;
   }).join("") : null;
+  const anomalyDetails = analysis.available ? `
+    ${analysis.incomplete ? `<p>Incomplete assessment. ${analysis.weatherCount} of ${WEATHER_KEYS.length} weather variables evaluated. A thermal classification is required for the selected series.</p>` : ""}
+    <p>${esc(analysis.comparison)}</p>
+    <table><thead><tr><th>Series</th><th>Raw detections</th><th>Seasonal active-cell percentile</th><th>Seasonal classification</th></tr></thead><tbody>
+    ${analysis.thermal.map(({ series, record, activityClass }) => `<tr><th scope="row">${esc(SENSOR_LABEL[series])}</th><td>${esc(record?.hotspot_count ?? "Unavailable")}${record?.quality === "partial_coverage" ? " (partial coverage)" : ""}</td><td>${esc(activityClass ? record?.percentile_vs_reference : "Unavailable")}</td><td>${esc(activityClass ? record?.seasonal?.label : "Unavailable")}</td></tr>`).join("")}
+    </tbody></table>
+    <table><thead><tr><th>Weather variable</th><th>Calendar-month percentile</th><th>Normal period</th><th>Screening interpretation</th></tr></thead><tbody>
+    ${analysis.weatherIndicators.map((item) => `<tr><th scope="row">${esc(item.label)}</th><td>${esc(item.percentile ?? "Unavailable")}</td><td>${esc(item.baseline ?? "Unavailable")}</td><td>${esc(item.interpretation)}</td></tr>`).join("")}
+    </tbody></table>
+    <p>${esc(ANOMALY_METHOD)} ${esc(ANOMALY_LIMITS)}</p>` : "";
 
   const figure = (k: MetricKey) => {
     const m = metadata.metrics[k];
@@ -145,6 +157,10 @@ ${record?.seasonal ? `<p>${esc(record.seasonal.label)}. Reference contains ${esc
 
 <h2>Environmental context for the selected month</h2>
 ${weatherRows && conditions && weather ? `<p>${esc(conditions.source)}. ${esc(weather.grid_resolution_note)}</p><table><thead><tr><th>Measure</th><th>Mean</th><th>Unit</th><th>Quality</th><th>Departure from normal</th></tr></thead><tbody>${weatherRows}</tbody></table>` : "<p>Weather data are unavailable for the selected month.</p>"}
+
+<h2>Environmental anomaly screen</h2>
+<p>${esc(SENSOR_LABEL[sensor])} · ${esc(analysis.summary)}</p>
+${anomalyDetails}
 
 <h2>${esc(SENSOR_LABEL[sensor])} detections per month, ${esc(region.name)}</h2>
 <table><thead><tr><th>Year</th>${MONTHS.map((m) => `<th>${m}</th>`).join("")}</tr></thead><tbody>

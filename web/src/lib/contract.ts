@@ -83,8 +83,16 @@ export interface MonthlyRecord {
   percentile_vs_reference: number | null;
   frp_sum_mw: number | null;
   active_cell_days?: number | null;
-  seasonal?: { label: string; n_ref: number; ref_min: number | null; ref_max: number | null };
+  seasonal?: {
+    label: string;
+    activityClass: ActivityClass;
+    n_ref: number;
+    ref_min: number | null;
+    ref_max: number | null;
+  };
 }
+
+export type ActivityClass = "above_range" | "below_range" | "within_range" | "not_evaluated" | "insufficient_reference";
 
 export interface MonthlyFile {
   data_status: DataStatus;
@@ -136,6 +144,7 @@ export interface WeatherRecord {
   details?: Partial<Record<WeatherKey, {
     quality: Quality | "qc_excluded";
     anomaly: number | null;
+    percentile: number | null;
     normal_period: string;
   }>>;
 }

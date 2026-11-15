@@ -1,4 +1,4 @@
-import type { HotspotCollection, HotspotFeature, HotspotProperties, Metadata, MetricDescriptor, MonthlyRecord, Quality, Region, Sensor, WeatherFile, WeatherRecord } from "./contract";
+import type { ActivityClass, HotspotCollection, HotspotFeature, HotspotProperties, Metadata, MetricDescriptor, MonthlyRecord, Quality, Region, Sensor, WeatherFile, WeatherRecord } from "./contract";
 
 type Series = Exclude<Sensor, "VIIRS">;
 type ScienceMetric = "hotspot_count" | "frp_sum_mw" | "active_cells" | "active_cell_days";
@@ -32,7 +32,7 @@ export interface ScienceMonthly {
     quality: Quality;
     metrics: Record<ScienceMetric, {
       value: number | null;
-      seasonal: { percentile: number | null; activity_class: string; ref_period: string; n_ref: number; ref_min: number | null; ref_max: number | null };
+      seasonal: { percentile: number | null; activity_class: ActivityClass; ref_period: string; n_ref: number; ref_min: number | null; ref_max: number | null };
     }>;
   }[];
 }
@@ -82,6 +82,7 @@ export interface ScienceWeather {
     value: number | null;
     quality: Quality | "qc_excluded";
     anomaly: number | null;
+    anomaly_pct: number | null;
     normal_period: string;
   }[];
 }
@@ -144,6 +145,7 @@ export function adaptMonthly(raw: ScienceMonthly, metadata: ScienceMetadata): Mo
       percentile_vs_reference: seasonal.percentile,
       seasonal: {
         label: metadata.activity_classes[seasonal.activity_class].en,
+        activityClass: seasonal.activity_class,
         n_ref: seasonal.n_ref,
         ref_min: seasonal.ref_min,
         ref_max: seasonal.ref_max,
@@ -181,7 +183,7 @@ export function adaptWeather(raw: ScienceWeather): WeatherFile {
     };
     const key = POWER_KEYS[r.variable];
     record[key] = r.value;
-    record.details![key] = { quality: r.quality, anomaly: r.anomaly, normal_period: r.normal_period };
+    record.details![key] = { quality: r.quality, anomaly: r.anomaly, percentile: r.anomaly_pct, normal_period: r.normal_period };
     records.set(id, record);
   }
   return {

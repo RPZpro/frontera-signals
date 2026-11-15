@@ -9,6 +9,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm run build      # production build (what Vercel runs)
 npm run lint
+npm test           # environmental anomaly screen tests
 npm run fixtures   # regenerate the synthetic demo data (deterministic)
 ```
 
@@ -20,6 +21,12 @@ By default the app uses the committed v1 NASA FIRMS and POWER export for Baja Ca
 
 Set `NEXT_PUBLIC_DATA_BASE=/data/demo` before starting dev or building to open the
 labelled synthetic demonstration.
+
+The Weather tab and printable report include a descriptive environmental screen.
+It identifies months in which a series is outside its pipeline-derived seasonal
+active-cell range and at least one quality-approved weather variable is in the
+bottom or top decile of its calendar-month normal. The screen uses the exported
+percentiles and reports incomplete coverage explicitly.
 
 ## Deploy (Vercel)
 

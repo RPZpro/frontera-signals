@@ -12,6 +12,7 @@ import { RegionSelector } from "@/components/RegionSelector";
 import { SensorAgreementExplorer } from "@/components/SensorAgreementExplorer";
 import { SensorSelector } from "@/components/SensorSelector";
 import { SENSOR_LABEL } from "@/lib/contract";
+import { analyzeEnvironment } from "@/lib/environmentalAnomaly";
 import { DATA_BASE, fmtInt, loadDataset, monthFeatures, MONTHS_LONG, yearsIn, type Dataset } from "@/lib/data";
 import { useHotspots } from "@/lib/useHotspots";
 import { SelectionProvider, TABS, useSelection, type Tab } from "@/lib/selection";
@@ -154,6 +155,10 @@ function Explorer({ data }: { data: Dataset }) {
   const { regionId, sensor, year, month, period, tab, setPeriod } = useSelection();
   const record = data.monthly.find((r) => r.region_id === regionId && r.sensor === sensor && r.period === period);
   const synthetic = data.metadata.data_status !== "nasa_firms";
+  const analysis = analyzeEnvironment({
+    dataStatus: data.metadata.data_status, monthly: data.monthly, weather: data.weather,
+    sensors: data.sensors, regionId, period, sensor,
+  });
   const hotspots = useHotspots(data.metadata, year, tab === "explore" || tab === "evidence");
   const features = useMemo(() => hotspots.data ? monthFeatures(hotspots.data, regionId, sensor, period) : null, [hotspots.data, regionId, sensor, period]);
   const years = yearsIn(data.monthly);
@@ -213,11 +218,11 @@ function Explorer({ data }: { data: Dataset }) {
             </div>
           )}
           {tab === "sensors" && <SensorAgreementExplorer sensors={data.sensors} monthly={data.monthly} agreement={data.agreement} />}
-          {tab === "weather" && <EnvironmentalContext weather={data.weather} />}
+          {tab === "weather" && <EnvironmentalContext weather={data.weather} analysis={analysis} />}
           {tab === "evidence" && (
             <div className="grid gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
               <EvidenceInspector metadata={data.metadata} record={record} />
-              <ExportControls metadata={data.metadata} monthly={data.monthly} features={features} weather={data.weather} pointsFailed={hotspots.error} />
+              <ExportControls metadata={data.metadata} monthly={data.monthly} features={features} weather={data.weather} analysis={analysis} pointsFailed={hotspots.error} />
             </div>
           )}
           {tab === "method" && <MethodNotes metadata={data.metadata} sensors={data.sensors} />}
