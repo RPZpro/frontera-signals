@@ -2,13 +2,13 @@
 
 @theme {
   /* Night-side palette: a satellite's view of the ground after dark. */
-  --color-ground: #0e151f;
-  --color-panel: #151e2b;
-  --color-raised: #1c2737;
-  --color-line: #293750;
-  --color-ink: #ebe7df;
-  --color-soft: #b9c2d0;
-  --color-muted: #8a97ab;
+  --color-ground: #07101b;
+  --color-panel: #0f1a28;
+  --color-raised: #172436;
+  --color-line: #24344b;
+  --color-ink: #f0f3f7;
+  --color-soft: #b6c3d3;
+  --color-muted: #8798ad;
   --color-demo: #f0cf6a;
   --color-modis: #3987b8;
   --color-viirs: #c47b1c;

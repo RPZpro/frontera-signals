@@ -76,16 +76,16 @@ function SensorPanel({ sensor, monthly }: { sensor: Sensor; monthly: MonthlyReco
           <BarChart data={rows} margin={{ top: 6, right: 4, bottom: 0, left: -18 }} barCategoryGap="18%">
             <defs>
               <pattern id={hatchId} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <line x1="0" y1="0" x2="0" y2="6" stroke="#8a97ab" strokeOpacity="0.55" strokeWidth="1.5" />
+                <line x1="0" y1="0" x2="0" y2="6" stroke="#8798ad" strokeOpacity="0.55" strokeWidth="1.5" />
               </pattern>
             </defs>
-            <CartesianGrid vertical={false} stroke="#293750" />
-            <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#293750" }} tick={{ fill: "#8a97ab", fontSize: 12 }} interval={0} />
-            <YAxis domain={[0, yMax]} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "#8a97ab", fontSize: 12 }} tickCount={4} />
-            <Tooltip cursor={{ fill: "#ebe7df", fillOpacity: 0.06 }} content={<TooltipBody sensor={sensor} year={year} />} />
+            <CartesianGrid vertical={false} stroke="#24344b" />
+            <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#24344b" }} tick={{ fill: "#8798ad", fontSize: 12 }} interval={0} />
+            <YAxis domain={[0, yMax]} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "#8798ad", fontSize: 12 }} tickCount={4} />
+            <Tooltip cursor={{ fill: "#f0f3f7", fillOpacity: 0.06 }} content={<TooltipBody sensor={sensor} year={year} />} />
             <Bar dataKey="count" stackId="m" radius={[4, 4, 0, 0]} isAnimationActive={false} onClick={(d) => setPeriod(year, (d as unknown as { payload: Row }).payload.month)} cursor="pointer">
               {rows.map((r) => (
-                <Cell key={r.label} fill={SENSOR_COLOR[sensor]} fillOpacity={r.month === month ? 1 : 0.6} stroke={r.month === month ? "#ebe7df" : "none"} strokeWidth={r.month === month ? 2 : 0} />
+                <Cell key={r.label} fill={SENSOR_COLOR[sensor]} fillOpacity={r.month === month ? 1 : 0.6} stroke={r.month === month ? "#f0f3f7" : "none"} strokeWidth={r.month === month ? 2 : 0} />
               ))}
             </Bar>
             <Bar dataKey="gap" stackId="m" fill={`url(#${hatchId})`} isAnimationActive={false} onClick={(d) => setPeriod(year, (d as unknown as { payload: Row }).payload.month)} cursor="pointer" />

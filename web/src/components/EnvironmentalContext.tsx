@@ -6,7 +6,7 @@ import { MONTHS, MONTHS_LONG, toPeriod } from "@/lib/data";
 import { useSelection } from "@/lib/selection";
 
 const KEYS: WeatherKey[] = ["t2m_c", "rh2m_pct", "prectotcorr_mm_day", "ws10m_m_s"];
-const INK = "#b9c2d0";
+const INK = "#b6c3d3";
 
 interface Row {
   label: string;
@@ -85,12 +85,12 @@ export function EnvironmentalContext({ weather }: { weather: WeatherFile | null 
               <div className="mt-2 h-32" role="img" aria-label={`${v.label} by month in ${year}, in ${v.unit}: ${rows.map((r) => `${r.label} ${r.value ?? "no data"}`).join(", ")}`}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={rows} margin={{ top: 6, right: 8, bottom: 0, left: -22 }}>
-                    <CartesianGrid vertical={false} stroke="#293750" />
-                    <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#293750" }} tick={{ fill: "#8a97ab", fontSize: 11 }} interval={2} />
-                    <YAxis tickLine={false} axisLine={false} tick={{ fill: "#8a97ab", fontSize: 11 }} tickCount={4} domain={["auto", "auto"]} />
-                    <Tooltip cursor={{ stroke: "#8a97ab", strokeDasharray: "3 3" }} content={<TooltipBody unit={v.unit} year={year} />} />
-                    <ReferenceLine x={MONTHS[month - 1]} stroke="#ebe7df" strokeOpacity={0.5} />
-                    <Line type="linear" dataKey="value" stroke={INK} strokeWidth={2} dot={{ r: 2.5, fill: INK, stroke: "#151e2b", strokeWidth: 1.5 }} activeDot={{ r: 4 }} connectNulls={false} isAnimationActive={false} />
+                    <CartesianGrid vertical={false} stroke="#24344b" />
+                    <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#24344b" }} tick={{ fill: "#8798ad", fontSize: 11 }} interval={2} />
+                    <YAxis tickLine={false} axisLine={false} tick={{ fill: "#8798ad", fontSize: 11 }} tickCount={4} domain={["auto", "auto"]} />
+                    <Tooltip cursor={{ stroke: "#8798ad", strokeDasharray: "3 3" }} content={<TooltipBody unit={v.unit} year={year} />} />
+                    <ReferenceLine x={MONTHS[month - 1]} stroke="#f0f3f7" strokeOpacity={0.5} />
+                    <Line type="linear" dataKey="value" stroke={INK} strokeWidth={2} dot={{ r: 2.5, fill: INK, stroke: "#0f1a28", strokeWidth: 1.5 }} activeDot={{ r: 4 }} connectNulls={false} isAnimationActive={false} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
