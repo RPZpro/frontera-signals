@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { HotspotFeature, Region } from "@/lib/contract";
-import { BASE_STYLE, GROUND, regionOutline, WORKER_URL } from "@/lib/mapStyle";
+import { BASE_STYLE, GROUND, HAS_CARTO_BASEMAP, regionOutline, WORKER_URL } from "@/lib/mapStyle";
 
 maplibregl.setWorkerUrl(WORKER_URL);
 
@@ -18,10 +18,11 @@ export function HeroMap({ regions, features, color }: { regions: Region[]; featu
     if (!container.current) return;
     let map: maplibregl.Map;
     try {
-      map = new maplibregl.Map({ container: container.current, style: BASE_STYLE, scrollZoom: false, dragRotate: false, attributionControl: { compact: true } });
+      map = new maplibregl.Map({ container: container.current, style: BASE_STYLE, scrollZoom: false, dragRotate: false, attributionControl: false });
     } catch {
       return; // no WebGL: the cover still works as plain text on the dark ground
     }
+    if (HAS_CARTO_BASEMAP) map.addControl(new maplibregl.AttributionControl({ compact: false }), "top-right");
     const fit = () => {
       const w = Math.min(...regions.map((r) => r.bbox[0]));
       const s = Math.min(...regions.map((r) => r.bbox[1]));
@@ -63,7 +64,7 @@ export function HeroMap({ regions, features, color }: { regions: Region[]; featu
           "circle-stroke-width": 1,
         },
       });
-      map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.55 } });
+      if (HAS_CARTO_BASEMAP) map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.55 } });
       fit();
     });
     map.on("resize", fit);

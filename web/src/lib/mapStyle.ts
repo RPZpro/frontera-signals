@@ -3,7 +3,12 @@ import type { Region } from "./contract";
 
 export const GROUND = "#07101b";
 
-const carto = (layer: string) => ["a", "b", "c", "d"].map((s) => `https://${s}.basemaps.cartocdn.com/${layer}/{z}/{x}/{y}.png`);
+const cartoKey = process.env.NEXT_PUBLIC_CARTO_BASEMAP_KEY?.trim();
+export const HAS_CARTO_BASEMAP = Boolean(cartoKey);
+const carto = (layer: string) => [
+  `https://basemaps.cartocdn.com/${layer}/{z}/{x}/{y}.png?key=${encodeURIComponent(cartoKey ?? "")}`,
+];
+const attribution = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, © <a href="https://carto.com/attribution/">CARTO</a>';
 
 /**
  * Inline style: the data layers still draw on the plain background if the free
@@ -11,13 +16,13 @@ const carto = (layer: string) => ["a", "b", "c", "d"].map((s) => `https://${s}.b
  */
 export const BASE_STYLE: StyleSpecification = {
   version: 8,
-  sources: {
-    basemap: { type: "raster", tiles: carto("dark_nolabels"), tileSize: 256, maxzoom: 19, attribution: "© OpenStreetMap contributors © CARTO" },
+  sources: HAS_CARTO_BASEMAP ? {
+    basemap: { type: "raster", tiles: carto("dark_nolabels"), tileSize: 256, maxzoom: 19, attribution },
     labels: { type: "raster", tiles: carto("dark_only_labels"), tileSize: 256, maxzoom: 19 },
-  },
+  } : {},
   layers: [
     { id: "ground", type: "background", paint: { "background-color": GROUND } },
-    { id: "basemap", type: "raster", source: "basemap", paint: { "raster-opacity": 0.8 } },
+    ...(HAS_CARTO_BASEMAP ? [{ id: "basemap", type: "raster", source: "basemap", paint: { "raster-opacity": 0.8 } } as const] : []),
   ],
 };
 

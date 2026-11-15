@@ -30,7 +30,15 @@ percentiles and reports incomplete coverage explicitly.
 
 ## Deploy (Vercel)
 
-Import the repository and set **Root Directory** to `web`. Include source files
-outside the root directory in the build so the staging hook can read `data/`.
+Import the repository using the **Next.js** preset and set **Root Directory** to
+`web`. Enable **Include source files outside of the Root Directory in the Build
+Step** so the staging hook can read `data/`. Use `npm ci` to install and
+`npm run build` to build. Keep the default output directory.
+
+Leave `NEXT_PUBLIC_DATA_BASE` unset to serve the committed NASA export. To enable
+the Dark Matter tiles, set `NEXT_PUBLIC_CARTO_BASEMAP_KEY` before building. Use a
+[CARTO browser tile key](https://carto.com/basemaps/apikey/) restricted to your
+deployment domains. The browser sends this public tile key to CARTO. Without it,
+the local regional outline and hotspot layers remain available.
 
 See `docs/ARCHITECTURE.md` for the frontend data flow.

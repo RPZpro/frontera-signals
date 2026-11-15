@@ -6,7 +6,7 @@ import type { GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { SENSOR_LABEL, type HotspotFeature, type HotspotProperties, type MonthlyRecord, type Region } from "@/lib/contract";
 import { fmtInt, MONTHS_LONG } from "@/lib/data";
-import { BASE_STYLE, GROUND, regionOutline, WORKER_URL } from "@/lib/mapStyle";
+import { BASE_STYLE, GROUND, HAS_CARTO_BASEMAP, regionOutline, WORKER_URL } from "@/lib/mapStyle";
 import { useSelection } from "@/lib/selection";
 import { SENSOR_COLOR } from "@/lib/theme";
 
@@ -48,7 +48,7 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
         style: BASE_STYLE,
         center: [-116.3, 32.2],
         zoom: 7,
-        attributionControl: { compact: true },
+        attributionControl: HAS_CARTO_BASEMAP ? { compact: false } : false,
       });
     } catch (err) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- report a WebGL start-up failure
@@ -84,7 +84,7 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
           "circle-stroke-width": 1.5,
         },
       });
-      map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.8 } });
+      if (HAS_CARTO_BASEMAP) map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.8 } });
 
       map.on("mouseenter", "hotspots", () => (map.getCanvas().style.cursor = "pointer"));
       map.on("mouseleave", "hotspots", () => (map.getCanvas().style.cursor = ""));
@@ -171,6 +171,7 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
         Each dot is one hot pixel, sized by fire radiative power. A hot pixel is not an independent fire, and it says
         nothing about cause. Dates are UTC. {region.boundary_note ?? "The dashed box marks the approximate region."}
         {basemapFailed && " Some basemap tiles are unavailable. The regional outline and hotspot layers are local."}
+        {!HAS_CARTO_BASEMAP && " The map uses the local regional outline and hotspot layers."}
       </p>
     </section>
   );
