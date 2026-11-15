@@ -1,11 +1,10 @@
 "use client";
 
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { WeatherFile, WeatherKey } from "@/lib/contract";
+import { WEATHER_KEYS, type WeatherFile } from "@/lib/contract";
 import { MONTHS, MONTHS_LONG, toPeriod } from "@/lib/data";
 import { useSelection } from "@/lib/selection";
 
-const KEYS: WeatherKey[] = ["t2m_c", "rh2m_pct", "prectotcorr_mm_day", "ws10m_m_s"];
 const INK = "#b6c3d3";
 
 interface Row {
@@ -62,16 +61,17 @@ export function EnvironmentalContext({ weather }: { weather: WeatherFile | null 
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {KEYS.map((key) => {
+        {WEATHER_KEYS.map((key) => {
           const v = weather.variables[key];
           const rows: Row[] = MONTHS.map((label, i) => ({ label, month: i + 1, value: byPeriod.get(toPeriod(year, i + 1))?.[key] ?? null }));
           const now = selectedRec?.[key] ?? null;
+          const detail = selectedRec?.details?.[key];
           return (
             <div key={key} className="flex flex-col gap-1 rounded-md border border-line bg-panel p-4">
               <h3 className="text-sm text-muted">{v.label}</h3>
               <p className="tabular font-display text-2xl font-semibold">
                 {now === null ? (
-                  <span className="text-base font-normal text-muted">Not available</span>
+                  <span className="text-base font-normal text-muted">{detail?.quality === "qc_excluded" ? "Excluded by quality control" : "Not available"}</span>
                 ) : (
                   <>
                     {now}
@@ -82,6 +82,9 @@ export function EnvironmentalContext({ weather }: { weather: WeatherFile | null 
               <p className="text-xs text-muted">
                 {MONTHS_LONG[month - 1]} {year}, monthly mean
               </p>
+              {detail?.anomaly != null && (
+                <p className="text-xs text-muted">{detail.anomaly > 0 ? "+" : ""}{detail.anomaly} {v.unit} from the {detail.normal_period} normal</p>
+              )}
               <div className="mt-2 h-32" role="img" aria-label={`${v.label} by month in ${year}, in ${v.unit}: ${rows.map((r) => `${r.label} ${r.value ?? "no data"}`).join(", ")}`}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={rows} margin={{ top: 6, right: 8, bottom: 0, left: -22 }}>

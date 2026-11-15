@@ -14,15 +14,16 @@ npm run fixtures   # regenerate the synthetic demo data (deterministic)
 
 ## Data status
 
-The app currently reads **synthetic demonstration fixtures** from `public/data/demo/`.
-They are not NASA measurements. While `metadata.json` says anything other than
-`"data_status": "nasa_firms"`, the UI shows a permanent "Demonstration data" banner.
+By default the app uses the committed v1 NASA FIRMS and POWER export for Baja California
+(2020–2025). The npm dev and build hooks copy the files from the repository's
+`data/export/` directory and stage the regional boundary. Point files load by year.
 
-To switch to Toño's real pipeline output, put `metadata.json`, `monthly.json` and
-`hotspots.geojson` in `public/data/<folder>/` and set `NEXT_PUBLIC_DATA_BASE=/data/<folder>`.
+Set `NEXT_PUBLIC_DATA_BASE=/data/demo` before starting dev or building to open the
+labelled synthetic demonstration.
 
 ## Deploy (Vercel)
 
-Import the repository and set **Root Directory** to `web`. No other settings are needed.
+Import the repository and set **Root Directory** to `web`. Include source files
+outside the root directory in the build so the staging hook can read `data/`.
 
-See `docs/ARCHITECTURE.md` for the structure, the data contract mapping and the open questions for Toño.
+See `docs/ARCHITECTURE.md` for the frontend data flow.

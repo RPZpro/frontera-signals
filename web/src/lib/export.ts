@@ -1,5 +1,5 @@
-import type { HotspotFeature, Metadata, MetricKey, MonthlyRecord, Region, Sensor } from "./contract";
-import { MONTHS, MONTHS_LONG, yearsIn } from "./data";
+import { SENSOR_LABEL, WEATHER_KEYS, type HotspotFeature, type Metadata, type MetricKey, type MonthlyRecord, type Region, type Sensor, type WeatherFile } from "./contract";
+import { MONTHS, MONTHS_LONG, toPeriod, yearsIn } from "./data";
 
 const METRICS: MetricKey[] = ["hotspot_count", "frp_sum_mw", "active_cells", "percentile_vs_reference"];
 
@@ -19,11 +19,15 @@ export function monthlyCsv(metadata: Metadata, records: MonthlyRecord[]): string
   const header = [
     "data_status", "region_id", "sensor", "period_utc", "quality",
     ...METRICS.map((k) => `${k} [${metadata.metrics[k].unit}; ${metadata.metrics[k].metric_kind}]`),
-    "source", "product_version",
+    "active_cell_days [cell-days; derived]", "seasonal_activity_class", "reference_year_count", "source", "product_version", "source_file", "sha256",
   ];
   const rows = [...records]
     .sort((a, b) => a.period.localeCompare(b.period))
-    .map((r) => [metadata.data_status, r.region_id, r.sensor, r.period, r.quality, ...METRICS.map((k) => r[k]), r.source, r.product_version]);
+    .map((r) => {
+      const file = metadata.input_files.find((f) => f.sensor === r.sensor && f.year === Number(r.period.slice(0, 4)));
+      return [metadata.data_status, r.region_id, r.sensor, r.period, r.quality, ...METRICS.map((k) => r[k]),
+        r.active_cell_days, r.seasonal?.label, r.seasonal?.n_ref, r.source, r.product_version, file?.source_file, file?.sha256];
+    });
   return toCsv([header, ...rows]);
 }
 
@@ -72,16 +76,26 @@ interface ReportInput {
   /** All monthly records of this region and sensor. */
   records: MonthlyRecord[];
   record: MonthlyRecord | undefined;
+  weather: WeatherFile | null;
   viewUrl: string;
 }
 
 /** Self-contained, printable HTML report for the current view. Light page so it prints cleanly. */
-export function evidenceReportHtml({ metadata, region, sensor, year, month, records, record, viewUrl }: ReportInput): string {
+export function evidenceReportHtml({ metadata, region, sensor, year, month, records, record, weather, viewUrl }: ReportInput): string {
   const synthetic = isSynthetic(metadata);
   const cov = metadata.sensors[sensor];
   const byPeriod = new Map(records.map((r) => [r.period, r]));
   const years = yearsIn(records);
-  const title = `${sensor} thermal detections, ${region.name}, ${MONTHS_LONG[month - 1]} ${year}`;
+  const title = `${SENSOR_LABEL[sensor]} thermal detections, ${region.name}, ${MONTHS_LONG[month - 1]} ${year}`;
+  const inputs = metadata.input_files.filter((f) => f.sensor === sensor);
+  const conditions = weather?.records.find((r) => r.region_id === region.region_id && r.period === toPeriod(year, month));
+  const weatherRows = weather && conditions ? WEATHER_KEYS.map((key) => {
+    const variable = weather.variables[key];
+    const detail = conditions.details?.[key];
+    const value = conditions[key];
+    const anomaly = detail?.anomaly;
+    return `<tr><th scope="row">${esc(variable.label)}</th><td>${value == null ? "Unavailable" : esc(value)}</td><td>${esc(variable.unit)}</td><td>${esc(detail?.quality ?? conditions.quality)}</td><td>${anomaly == null ? "Unavailable" : esc(`${anomaly} (${detail?.normal_period} normal)`)}</td></tr>`;
+  }).join("") : null;
 
   const figure = (k: MetricKey) => {
     const m = metadata.metrics[k];
@@ -96,11 +110,11 @@ export function evidenceReportHtml({ metadata, region, sensor, year, month, reco
     return `<td class="num${sel}">${r.hotspot_count}${r.quality === "partial_coverage" ? "*" : ""}</td>`;
   };
 
-  const files = metadata.input_files.length
-    ? `<table><thead><tr><th>File</th><th>Sensor</th><th>Rows read</th><th>Rows valid</th><th>Dropped</th><th>Duplicates removed</th><th>SHA-256</th></tr></thead><tbody>${metadata.input_files
+  const files = inputs.length
+    ? `<table><thead><tr><th>File</th><th>Series</th><th>Rows read</th><th>Rows valid</th><th>SHA-256</th></tr></thead><tbody>${inputs
         .map(
           (f) =>
-            `<tr><td>${esc(f.source_file)}</td><td>${esc(f.sensor)}</td><td class="num">${f.rows_read}</td><td class="num">${f.rows_valid}</td><td>${esc(Object.entries(f.dropped).map(([k, n]) => `${k}: ${n}`).join("; ") || "none")}</td><td class="num">${f.duplicates_removed}</td><td class="hash">${esc(f.sha256)}</td></tr>`,
+            `<tr><td>${esc(f.source_file)}</td><td>${esc(SENSOR_LABEL[f.sensor])}</td><td class="num">${f.rows_read}</td><td class="num">${f.rows_valid}</td><td class="hash">${esc(f.sha256)}</td></tr>`,
         )
         .join("")}</tbody></table>`
     : `<p>No NASA input files are listed in the metadata${synthetic ? ", because this dataset is synthetic" : ""}.</p>`;
@@ -126,8 +140,13 @@ ${synthetic ? `<p class="demo">DEMONSTRATION DATA. ${esc(metadata.data_status_no
 <h2>Selected month</h2>
 <p>${esc(record ? (record.quality === "no_data" ? "No data for this month. This is a gap in the record, not zero detections." : record.quality === "partial_coverage" ? "Partial coverage: the month is incomplete, so the figures are a lower bound." : "Full month.") : "This month is not in the dataset.")}</p>
 <table><thead><tr><th>Measure</th><th>Value</th><th>Unit</th><th>Kind</th><th>Definition</th></tr></thead><tbody>${(["hotspot_count", "frp_sum_mw", "active_cells", "percentile_vs_reference"] as MetricKey[]).map(figure).join("")}</tbody></table>
+${record?.active_cell_days != null ? `<p>Active cell-days (derived) · ${esc(record.active_cell_days)}</p>` : ""}
+${record?.seasonal ? `<p>${esc(record.seasonal.label)}. Reference contains ${esc(record.seasonal.n_ref)} other same-calendar months.</p>` : ""}
 
-<h2>${esc(sensor)} detections per month, ${esc(region.name)}</h2>
+<h2>Environmental context for the selected month</h2>
+${weatherRows && conditions && weather ? `<p>${esc(conditions.source)}. ${esc(weather.grid_resolution_note)}</p><table><thead><tr><th>Measure</th><th>Mean</th><th>Unit</th><th>Quality</th><th>Departure from normal</th></tr></thead><tbody>${weatherRows}</tbody></table>` : "<p>Weather data are unavailable for the selected month.</p>"}
+
+<h2>${esc(SENSOR_LABEL[sensor])} detections per month, ${esc(region.name)}</h2>
 <table><thead><tr><th>Year</th>${MONTHS.map((m) => `<th>${m}</th>`).join("")}</tr></thead><tbody>
 ${years.map((y) => `<tr><th scope="row">${y}</th>${MONTHS.map((_, i) => cell(y, i)).join("")}</tr>`).join("\n")}
 </tbody></table>

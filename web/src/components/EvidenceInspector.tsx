@@ -1,6 +1,6 @@
 "use client";
 
-import type { Metadata, MetricKey, MonthlyRecord } from "@/lib/contract";
+import { SENSOR_LABEL, type Metadata, type MetricKey, type MonthlyRecord } from "@/lib/contract";
 import { fmtInt } from "@/lib/data";
 import { useSelection } from "@/lib/selection";
 
@@ -72,7 +72,7 @@ export function EvidenceInspector({ metadata, record }: { metadata: Metadata; re
       </dl>
 
       <div>
-        <h3 className="font-bold text-soft">{sensor} input files</h3>
+        <h3 className="font-bold text-soft">{SENSOR_LABEL[sensor]} input files</h3>
         {files.length === 0 ? (
           <p className="mt-1.5 max-w-[68ch] text-sm text-muted">
             {synthetic
@@ -99,9 +99,9 @@ export function EvidenceInspector({ metadata, record }: { metadata: Metadata; re
                     <td className="tabular py-2 pr-4 text-right">{fmtInt(f.rows_read)}</td>
                     <td className="tabular py-2 pr-4 text-right">{fmtInt(f.rows_valid)}</td>
                     <td className="py-2 pr-4">
-                      {Object.entries(f.dropped).map(([reason, n]) => `${reason}: ${n}`).join("; ") || "None"}
+                      {f.dropped ? Object.entries(f.dropped).map(([reason, n]) => `${reason}: ${n}`).join("; ") || "None" : "Unavailable"}
                     </td>
-                    <td className="tabular py-2 pr-4 text-right">{fmtInt(f.duplicates_removed)}</td>
+                    <td className="tabular py-2 pr-4 text-right">{f.duplicates_removed == null ? "Unavailable" : fmtInt(f.duplicates_removed)}</td>
                     <td className="break-all py-2 font-mono text-xs">{f.sha256}</td>
                   </tr>
                 ))}

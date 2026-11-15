@@ -1,4 +1,5 @@
 import type { StyleSpecification } from "maplibre-gl";
+import type { Region } from "./contract";
 
 export const GROUND = "#07101b";
 
@@ -22,3 +23,16 @@ export const BASE_STYLE: StyleSpecification = {
 
 /** See scripts/copy-maplibre-worker.mjs. */
 export const WORKER_URL = "/vendor/maplibre/maplibre-gl-worker.mjs";
+
+export function regionOutline(region: Region): GeoJSON.FeatureCollection {
+  if (region.boundary) return region.boundary;
+  const [w, s, e, n] = region.bbox;
+  return {
+    type: "FeatureCollection",
+    features: [{
+      type: "Feature",
+      properties: {},
+      geometry: { type: "LineString", coordinates: [[w, s], [e, s], [e, n], [w, n], [w, s]] },
+    }],
+  };
+}

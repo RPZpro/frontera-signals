@@ -4,9 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { HotspotCollection, HotspotProperties, MonthlyRecord, Region } from "@/lib/contract";
+import { SENSOR_LABEL, type HotspotFeature, type HotspotProperties, type MonthlyRecord, type Region } from "@/lib/contract";
 import { fmtInt, MONTHS_LONG } from "@/lib/data";
-import { BASE_STYLE, GROUND, WORKER_URL } from "@/lib/mapStyle";
+import { BASE_STYLE, GROUND, regionOutline, WORKER_URL } from "@/lib/mapStyle";
 import { useSelection } from "@/lib/selection";
 import { SENSOR_COLOR } from "@/lib/theme";
 
@@ -14,44 +14,29 @@ maplibregl.setWorkerUrl(WORKER_URL);
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string);
 
-function regionOutline(region: Region): GeoJSON.Feature {
-  const [w, s, e, n] = region.bbox;
-  return {
-    type: "Feature",
-    properties: {},
-    geometry: { type: "LineString", coordinates: [[w, s], [e, s], [e, n], [w, n], [w, s]] },
-  };
-}
-
 interface Props {
   regions: Region[];
-  hotspots: HotspotCollection;
+  features: HotspotFeature[] | null;
+  pointsFailed: boolean;
   /** Monthly record for the current selection, used to tell "zero" from "no data". */
   record: MonthlyRecord | undefined;
   synthetic: boolean;
 }
 
-export function FireMap({ regions, hotspots, record, synthetic }: Props) {
-  const { regionId, sensor, year, month, period } = useSelection();
+export function FireMap({ regions, features, pointsFailed, record, synthetic }: Props) {
+  const { regionId, sensor, year, month } = useSelection();
+  const label = SENSOR_LABEL[sensor];
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
+  const [basemapFailed, setBasemapFailed] = useState(false);
 
   const region = regions.find((r) => r.region_id === regionId) ?? regions[0];
 
-  // Only the selected region, sensor and UTC month ever reach the map source.
   const visible = useMemo<GeoJSON.FeatureCollection>(
-    () => ({
-      type: "FeatureCollection",
-      features: hotspots.features.filter(
-        (f) =>
-          f.properties.region_id === regionId &&
-          f.properties.sensor === sensor &&
-          f.properties.acq_datetime_utc.startsWith(period),
-      ),
-    }),
-    [hotspots, regionId, sensor, period],
+    () => ({ type: "FeatureCollection", features: features ?? [] }),
+    [features],
   );
 
   useEffect(() => {
@@ -71,10 +56,13 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
       return;
     }
     mapRef.current = map;
+    map.on("error", (event) => {
+      if ("sourceId" in event && (event.sourceId === "basemap" || event.sourceId === "labels")) setBasemapFailed(true);
+    });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
 
-    map.on("load", () => {
+    map.once("style.load", () => {
       map.addSource("region", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addSource("hotspots", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({
@@ -90,7 +78,7 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
         paint: {
           // area grows with fire radiative power; the ring separates overlapping pixels
           "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "frp_mw"]], 0, 3, 10, 9],
-          "circle-color": ["match", ["get", "sensor"], "MODIS", SENSOR_COLOR.MODIS, SENSOR_COLOR.VIIRS],
+          "circle-color": ["match", ["get", "sensor"], "MODIS", SENSOR_COLOR.MODIS, "VIIRS_NOAA20", SENSOR_COLOR.VIIRS_NOAA20, SENSOR_COLOR.VIIRS],
           "circle-opacity": 0.85,
           "circle-stroke-color": GROUND,
           "circle-stroke-width": 1.5,
@@ -105,8 +93,8 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
         if (!f || f.geometry.type !== "Point") return;
         const p = f.properties as HotspotProperties;
         const html = [
-          `<strong>${esc(p.sensor)} hot pixel</strong> (${esc(p.platform)})`,
-          `${esc(p.acq_datetime_utc.replace("T", " ").replace(":00Z", ""))} UTC, ${p.daynight === "D" ? "day" : "night"}`,
+          `<strong>${esc(SENSOR_LABEL[p.sensor])} hot pixel</strong> (${esc(p.platform)})`,
+          `${esc(p.acq_datetime_utc.replace("T", " ").replace(/(:00)?Z$/, ""))} UTC, ${p.daynight === "D" ? "day" : "night"}`,
           `Fire radiative power: ${Number(p.frp_mw).toFixed(1)} MW`,
           `Confidence: ${esc(p.confidence_class)} (as distributed: ${esc(String(p.confidence_raw))})`,
           `Product version: ${esc(String(p.version))}`,
@@ -144,10 +132,9 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
   const noData = !record || record.quality === "no_data" || record.hotspot_count === null;
   const monthLabel = `${MONTHS_LONG[month - 1]} ${year}`;
   const status = noData
-    ? `No ${sensor} data for ${monthLabel}. This is a gap in the record, not zero detections.`
-    : visible.features.length === 0
-      ? `${sensor} recorded no detections in ${monthLabel}. No detection does not mean no fire.`
-      : null;
+    ? `No ${label} data for ${monthLabel}.`
+    : !features ? (pointsFailed ? "Hotspot locations unavailable" : "Loading hotspot locations…")
+      : features.length === 0 ? `${label} recorded no detections in ${monthLabel}.` : null;
 
   return (
     <section aria-labelledby="map-title" className="flex flex-col gap-3">
@@ -157,7 +144,7 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
         </h2>
         <p className="tabular flex items-center gap-2 text-sm text-soft">
           <span aria-hidden className="size-3 rounded-full" style={{ background: SENSOR_COLOR[sensor] }} />
-          {noData ? `${sensor}: no data` : `${fmtInt(visible.features.length)} ${sensor} hot pixels`}
+          {noData ? `${label}: no data` : `${fmtInt(record.hotspot_count!)} ${label} hot pixels`}
         </p>
       </div>
 
@@ -182,7 +169,8 @@ export function FireMap({ regions, hotspots, record, synthetic }: Props) {
       </div>
       <p className="max-w-[68ch] text-sm text-muted">
         Each dot is one hot pixel, sized by fire radiative power. A hot pixel is not an independent fire, and it says
-        nothing about cause. Dates are UTC. The dashed box is a rough region outline, not an official boundary.
+        nothing about cause. Dates are UTC. {region.boundary_note ?? "The dashed box marks the approximate region."}
+        {basemapFailed && " Some basemap tiles are unavailable. The regional outline and hotspot layers are local."}
       </p>
     </section>
   );

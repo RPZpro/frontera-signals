@@ -11,7 +11,9 @@ import { MonthReadout } from "@/components/MonthReadout";
 import { RegionSelector } from "@/components/RegionSelector";
 import { SensorAgreementExplorer } from "@/components/SensorAgreementExplorer";
 import { SensorSelector } from "@/components/SensorSelector";
-import { fmtInt, loadDataset, MONTHS_LONG, yearsIn, type Dataset } from "@/lib/data";
+import { SENSOR_LABEL } from "@/lib/contract";
+import { DATA_BASE, fmtInt, loadDataset, monthFeatures, MONTHS_LONG, yearsIn, type Dataset } from "@/lib/data";
+import { useHotspots } from "@/lib/useHotspots";
 import { SelectionProvider, TABS, useSelection, type Tab } from "@/lib/selection";
 import { SENSOR_COLOR } from "@/lib/theme";
 
@@ -40,35 +42,36 @@ function DemoBanner({ note }: { note?: string }) {
   );
 }
 
-/** Cover: the busiest month in the dataset, drawn on the real map. */
+/** Cover: the busiest available month for the selected region and series. */
 function Hero({ data, synthetic }: { data: Dataset; synthetic: boolean }) {
-  const { setRegion, setSensor, setPeriod, setTab } = useSelection();
+  const { regionId, sensor, setPeriod, setTab } = useSelection();
+  const regions = useMemo(() => data.metadata.regions.filter((r) => r.region_id === regionId), [data, regionId]);
 
   const peak = useMemo(() => {
-    let best = data.monthly[0];
-    for (const r of data.monthly) if ((r.hotspot_count ?? -1) > (best.hotspot_count ?? -1)) best = r;
-    const features = data.hotspots.features.filter(
-      (f) => f.properties.sensor === best.sensor && f.properties.acq_datetime_utc.startsWith(best.period),
-    );
-    return { record: best, features, year: Number(best.period.slice(0, 4)), month: Number(best.period.slice(5)) };
-  }, [data]);
+    const records = data.monthly.filter((r) => r.region_id === regionId && r.sensor === sensor && r.hotspot_count !== null);
+    return records.reduce<(typeof records)[number] | undefined>((best, r) =>
+      !best || (r.hotspot_count ?? -1) > (best.hotspot_count ?? -1) ? r : best, undefined);
+  }, [data, regionId, sensor]);
+  const year = Number(peak?.period.slice(0, 4));
+  const month = Number(peak?.period.slice(5));
+  const hotspots = useHotspots(data.metadata, year, !!peak);
+  const features = useMemo(() => hotspots.data && peak ? monthFeatures(hotspots.data, regionId, sensor, peak.period) : [], [hotspots.data, peak, regionId, sensor]);
 
   const years = yearsIn(data.monthly);
-  const names = data.metadata.regions.map((r) => r.name);
-  const where = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
-  const monthLabel = `${MONTHS_LONG[peak.month - 1]} ${peak.year}`;
+  const where = regions[0].name;
+  const monthLabel = `${MONTHS_LONG[month - 1]} ${year}`;
   const toDashboard = () => document.getElementById("dashboard")?.scrollIntoView({ behavior: "auto", block: "start" });
 
   return (
     <header className="relative flex h-[92svh] min-h-[36rem] flex-col justify-end overflow-hidden border-b border-line bg-ground lg:justify-center">
       <div className="absolute inset-0">
-        <HeroMap regions={data.metadata.regions} features={peak.features} color={SENSOR_COLOR[peak.record.sensor]} />
+        <HeroMap regions={regions} features={features} color={SENSOR_COLOR[sensor]} />
       </div>
       {/* scrim so the headline stays readable over the map */}
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ground via-ground/80 to-transparent lg:bg-gradient-to-r lg:via-ground/70" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ground via-ground/80 to-transparent lg:bg-gradient-to-r lg:via-ground/70" />
 
-      <div className="relative mx-auto w-full max-w-[90rem] px-4 pb-8 sm:px-8 lg:pb-0">
-        <div className="max-w-[40rem]">
+      <div className="pointer-events-none relative mx-auto w-full max-w-[90rem] px-4 pb-8 sm:px-8 lg:pb-0">
+        <div className="pointer-events-auto max-w-[40rem]">
           <p className="text-soft">Frontera Signal, NASA Space Apps Challenge 2026</p>
           <h1 className="font-display mt-3 text-[clamp(3.25rem,9vw,7.5rem)] font-bold leading-[0.92] tracking-tight">Fire Seasons</h1>
           <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-soft sm:text-xl">
@@ -79,28 +82,27 @@ function Hero({ data, synthetic }: { data: Dataset; synthetic: boolean }) {
             <button type="button" onClick={toDashboard} className="h-12 rounded-md bg-ink px-6 text-base font-bold text-ground hover:bg-white">
               Explore the data
             </button>
-            <button
+            {peak && <button
               type="button"
               onClick={() => {
-                setRegion(peak.record.region_id);
-                setSensor(peak.record.sensor);
-                setPeriod(peak.year, peak.month);
+                setPeriod(year, month);
                 setTab("explore");
                 toDashboard();
               }}
               className="h-12 text-base text-ink underline decoration-muted underline-offset-4 hover:decoration-ink"
             >
               Open {monthLabel} in detail
-            </button>
+            </button>}
           </div>
         </div>
       </div>
 
       <p className="tabular relative mx-auto mt-0 flex w-full max-w-[90rem] flex-wrap items-center gap-x-2.5 gap-y-1 px-4 pb-10 text-sm text-soft sm:px-8 lg:absolute lg:inset-x-0 lg:bottom-0 lg:pb-9">
-        <span>
-          <span aria-hidden className="mr-2 inline-block size-2.5 rounded-full" style={{ background: SENSOR_COLOR[peak.record.sensor] }} />
-          On the map: {fmtInt(peak.features.length)} {peak.record.sensor} hot pixels in {monthLabel}, the busiest month in this dataset.
-        </span>
+        {peak && <span>
+          <span aria-hidden className="mr-2 inline-block size-2.5 rounded-full" style={{ background: SENSOR_COLOR[sensor] }} />
+          {fmtInt(peak.hotspot_count!)} {SENSOR_LABEL[sensor]} detections in {monthLabel}, the highest monthly count for this series in {where}.
+          {hotspots.error && " Map points unavailable."}
+        </span>}
         {synthetic && <strong className="text-demo">Synthetic demo points, not NASA measurements.</strong>}
       </p>
     </header>
@@ -141,7 +143,7 @@ function Tabs() {
         </div>
         <p className="tabular hidden shrink-0 items-center gap-2 pb-3.5 text-sm text-soft lg:flex">
           <span aria-hidden className="size-2.5 rounded-full" style={{ background: SENSOR_COLOR[sensor] }} />
-          {sensor}, {MONTHS_LONG[month - 1]} {year}
+          {SENSOR_LABEL[sensor]}, {MONTHS_LONG[month - 1]} {year}
         </p>
       </div>
     </div>
@@ -149,9 +151,12 @@ function Tabs() {
 }
 
 function Explorer({ data }: { data: Dataset }) {
-  const { regionId, sensor, period, tab } = useSelection();
+  const { regionId, sensor, year, month, period, tab, setPeriod } = useSelection();
   const record = data.monthly.find((r) => r.region_id === regionId && r.sensor === sensor && r.period === period);
   const synthetic = data.metadata.data_status !== "nasa_firms";
+  const hotspots = useHotspots(data.metadata, year, tab === "explore" || tab === "evidence");
+  const features = useMemo(() => hotspots.data ? monthFeatures(hotspots.data, regionId, sensor, period) : null, [hotspots.data, regionId, sensor, period]);
+  const years = yearsIn(data.monthly);
 
   return (
     <>
@@ -162,35 +167,60 @@ function Explorer({ data }: { data: Dataset }) {
         <div className="mx-auto flex max-w-[90rem] flex-wrap items-end justify-between gap-x-10 gap-y-5 px-4 pb-6 pt-8 sm:px-8">
           <div>
             <h2 className="font-display text-2xl font-bold sm:text-3xl">Pick a place, a sensor and a month</h2>
-            <p className="mt-1.5 max-w-[60ch] text-soft">Every section below follows the same selection.</p>
+            {!synthetic && (
+              <p className="mt-1.5 text-soft">
+                NASA FIRMS standard processing · {years[0]}–{years.at(-1)} ·{" "}
+                <a className="underline" href={`${DATA_BASE}/metadata.json`}>Dataset provenance</a>
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
             <RegionSelector regions={data.metadata.regions} />
-            <SensorSelector />
+            <SensorSelector sensors={data.sensors} />
+            <div className="flex gap-2">
+              <div className="flex flex-col gap-1.5 text-sm text-muted">
+                <label htmlFor="selection-year">Year</label>
+                <select id="selection-year" className="h-11 rounded-md border border-line bg-raised px-3 text-ink" value={year} onChange={(e) => setPeriod(Number(e.target.value), month)}>
+                  {years.map((y) => <option key={y}>{y}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5 text-sm text-muted">
+                <label htmlFor="selection-month">Month</label>
+                <select id="selection-month" className="h-11 rounded-md border border-line bg-raised px-3 text-ink" value={month} onChange={(e) => setPeriod(year, Number(e.target.value))}>
+                  {MONTHS_LONG.map((name, index) => <option key={name} value={index + 1}>{name}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
         <Tabs />
 
         <main id="tab-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="mx-auto min-h-[70svh] max-w-[90rem] px-4 py-8 sm:px-8">
+          {hotspots.error && (tab === "explore" || tab === "evidence") && (
+            <p role="alert" className="mb-4 text-soft">
+              Hotspot locations could not be loaded for {year}.{" "}
+              <button type="button" className="underline" onClick={hotspots.retry}>Try again</button>
+            </p>
+          )}
           {tab === "explore" && (
             <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-10">
               <BurningCalendar monthly={data.monthly} />
-              <FireMap regions={data.metadata.regions} hotspots={data.hotspots} record={record} synthetic={synthetic} />
+              <FireMap regions={data.metadata.regions} features={features} pointsFailed={hotspots.error} record={record} synthetic={synthetic} />
               <div className="lg:col-span-2">
                 <MonthReadout metadata={data.metadata} record={record} />
               </div>
             </div>
           )}
-          {tab === "sensors" && <SensorAgreementExplorer monthly={data.monthly} />}
+          {tab === "sensors" && <SensorAgreementExplorer sensors={data.sensors} monthly={data.monthly} agreement={data.agreement} />}
           {tab === "weather" && <EnvironmentalContext weather={data.weather} />}
           {tab === "evidence" && (
             <div className="grid gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
               <EvidenceInspector metadata={data.metadata} record={record} />
-              <ExportControls metadata={data.metadata} monthly={data.monthly} hotspots={data.hotspots} />
+              <ExportControls metadata={data.metadata} monthly={data.monthly} features={features} weather={data.weather} pointsFailed={hotspots.error} />
             </div>
           )}
-          {tab === "method" && <MethodNotes metadata={data.metadata} />}
+          {tab === "method" && <MethodNotes metadata={data.metadata} sensors={data.sensors} />}
         </main>
 
         <footer className="border-t border-line">

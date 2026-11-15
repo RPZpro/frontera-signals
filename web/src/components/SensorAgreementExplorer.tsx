@@ -1,9 +1,10 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { SENSORS, type MonthlyRecord, type Quality, type Sensor } from "@/lib/contract";
+import { SENSOR_LABEL, type MonthlyRecord, type Quality, type Sensor } from "@/lib/contract";
 import { fmtInt, indexMonthly, MONTHS, MONTHS_LONG, toPeriod } from "@/lib/data";
 import { useSelection } from "@/lib/selection";
+import type { ScienceAgreement } from "@/lib/science";
 import { SENSOR_BLURB, SENSOR_COLOR } from "@/lib/theme";
 
 interface Row {
@@ -25,13 +26,13 @@ function TooltipBody({ active, payload, sensor, year }: { active?: boolean; payl
         {MONTHS_LONG[r.month - 1]} {year}
       </p>
       {r.count === null ? (
-        <p className="text-soft">No {sensor} data. Not zero.</p>
+        <p className="text-soft">No {SENSOR_LABEL[sensor]} data. Not zero.</p>
       ) : (
         <>
           <p className="tabular">
-            {fmtInt(r.count)} {sensor} detections{r.quality === "partial_coverage" ? " (partial coverage)" : ""}
+            {fmtInt(r.count)} {SENSOR_LABEL[sensor]} detections{r.quality === "partial_coverage" ? " (partial coverage)" : ""}
           </p>
-          {r.percentile !== null && <p className="tabular text-soft">Percentile {r.percentile} in {sensor}&rsquo;s own record</p>}
+          {r.percentile !== null && <p className="tabular text-soft">Seasonal percentile {r.percentile} in the series record</p>}
         </>
       )}
     </div>
@@ -66,7 +67,7 @@ function SensorPanel({ sensor, monthly }: { sensor: Sensor; monthly: MonthlyReco
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="flex items-center gap-2 font-bold">
           <span aria-hidden className="size-3 rounded-full" style={{ background: SENSOR_COLOR[sensor] }} />
-          {sensor} <span className="text-sm font-normal text-muted">{SENSOR_BLURB[sensor]}</span>
+          {SENSOR_LABEL[sensor]} <span className="text-sm font-normal text-muted">{SENSOR_BLURB[sensor]}</span>
         </h3>
         <p className="text-sm text-muted">{sensor === mapSensor ? "Shown on the map and calendar" : " "}</p>
       </div>
@@ -100,7 +101,7 @@ function SensorPanel({ sensor, monthly }: { sensor: Sensor; monthly: MonthlyReco
         {selected.count === null
           ? "no data (not zero)"
           : `${fmtInt(selected.count)} detections${selected.quality === "partial_coverage" ? ", partial coverage" : ""}${
-              selected.percentile !== null ? `, percentile ${selected.percentile} in its own record` : ""
+              selected.percentile !== null ? `, seasonal percentile ${selected.percentile} in the series record` : ""
             }`}
       </p>
       <p className="text-sm text-muted">
@@ -109,7 +110,7 @@ function SensorPanel({ sensor, monthly }: { sensor: Sensor; monthly: MonthlyReco
 
       <table className="sr-only">
         <caption>
-          {sensor} detections per month in {year}
+          {SENSOR_LABEL[sensor]} detections per month in {year}
         </caption>
         <thead>
           <tr>
@@ -132,13 +133,10 @@ function SensorPanel({ sensor, monthly }: { sensor: Sensor; monthly: MonthlyReco
   );
 }
 
-/**
- * MODIS and VIIRS side by side for the selected region and year. Two charts,
- * two scales, never summed and never overlaid. No agreement score is computed
- * here: that needs a harmonization method verified by the science lead.
- */
-export function SensorAgreementExplorer({ monthly }: { monthly: MonthlyRecord[] }) {
-  const { year } = useSelection();
+/** One count scale per series for the selected region and year. */
+export function SensorAgreementExplorer({ monthly, sensors, agreement }: { monthly: MonthlyRecord[]; sensors: Sensor[]; agreement: ScienceAgreement | null }) {
+  const { year, regionId } = useSelection();
+  const pairs = agreement?.pairs.filter((pair) => pair.region_id === regionId && pair.metric === "active_cells") ?? [];
   return (
     <section aria-labelledby="agreement-title" className="flex flex-col gap-4">
       <div>
@@ -146,16 +144,35 @@ export function SensorAgreementExplorer({ monthly }: { monthly: MonthlyRecord[] 
           MODIS and VIIRS side by side, {year}
         </h2>
         <p className="mt-1 max-w-[72ch] text-sm text-soft">
-          Compare the shape of the year, not the heights. Each chart has its own scale because VIIRS sees smaller and
-          cooler hot pixels than MODIS and passes over at a different time. No agreement score is shown: a harmonized
-          comparison has not been scientifically verified yet.
+          Each series has its own detection-count scale. Use seasonal percentiles to compare patterns across series.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {SENSORS.map((s) => (
+        {sensors.map((s) => (
           <SensorPanel key={s} sensor={s} monthly={monthly} />
         ))}
       </div>
+      {pairs.length > 0 && (
+        <section className="rounded-md border border-line bg-panel p-4">
+          <h3 className="font-semibold">Agreement in seasonal active-cell percentiles</h3>
+          <p className="mt-1 text-sm text-soft">Pipeline estimates across the full study period. Physical equivalence remains unvalidated.</p>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[35rem] text-left text-sm">
+              <thead className="text-muted"><tr><th>Series pair</th><th>Coverage</th><th>Spearman ρ</th><th>Mean gap (percentile points)</th></tr></thead>
+              <tbody>
+                {pairs.map((pair) => (
+                  <tr key={`${pair.series_a}/${pair.series_b}`} className="border-t border-line">
+                    <th scope="row" className="py-2 pr-4 font-normal">{SENSOR_LABEL[pair.series_a]} / {SENSOR_LABEL[pair.series_b]}</th>
+                    <td className="pr-4">{pair.period.join(" to ")} ({pair.n_months} months)</td>
+                    <td>{pair.spearman_percentile ?? "Unavailable"}</td>
+                    <td>{pair.mean_abs_percentile_diff ?? "Unavailable"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </section>
   );
 }
