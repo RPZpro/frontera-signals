@@ -6,6 +6,7 @@ import { BurningCalendar } from "@/components/BurningCalendar";
 import { EnvironmentalContext } from "@/components/EnvironmentalContext";
 import { EvidenceInspector } from "@/components/EvidenceInspector";
 import { ExportControls } from "@/components/ExportControls";
+import { HarmonizedInstrument } from "@/components/HarmonizedInstrument";
 import { MethodNotes } from "@/components/MethodNotes";
 import { MonthReadout } from "@/components/MonthReadout";
 import { RegionSelector } from "@/components/RegionSelector";
@@ -16,7 +17,7 @@ import { analyzeEnvironment } from "@/lib/environmentalAnomaly";
 import { DATA_BASE, fmtInt, loadDataset, monthFeatures, MONTHS_LONG, yearsIn, type Dataset } from "@/lib/data";
 import { useHotspots } from "@/lib/useHotspots";
 import { SelectionProvider, TABS, useSelection, type Tab } from "@/lib/selection";
-import { SENSOR_COLOR } from "@/lib/theme";
+import { INDEX_COLOR, SENSOR_COLOR } from "@/lib/theme";
 
 // MapLibre needs the browser (WebGL), so both maps are loaded on the client only.
 const FireMap = dynamic(() => import("@/components/FireMap").then((m) => m.FireMap), {
@@ -28,6 +29,7 @@ const HeroMap = dynamic(() => import("@/components/HeroMap").then((m) => m.HeroM
 const TAB_LABEL: Record<Tab, string> = {
   explore: "Calendar and map",
   sensors: "Compare sensors",
+  harmonized: "Harmonized",
   weather: "Weather",
   evidence: "Evidence and export",
   method: "How it works",
@@ -143,8 +145,8 @@ function Tabs() {
           ))}
         </div>
         <p className="tabular hidden shrink-0 items-center gap-2 pb-3.5 text-sm text-soft lg:flex">
-          <span aria-hidden className="size-2.5 rounded-full" style={{ background: SENSOR_COLOR[sensor] }} />
-          {SENSOR_LABEL[sensor]}, {MONTHS_LONG[month - 1]} {year}
+          <span aria-hidden className="size-2.5 rounded-full" style={{ background: tab === "harmonized" ? INDEX_COLOR : SENSOR_COLOR[sensor] }} />
+          {tab === "harmonized" ? "MODIS and VIIRS combined" : SENSOR_LABEL[sensor]}, {MONTHS_LONG[month - 1]} {year}
         </p>
       </div>
     </div>
@@ -218,6 +220,7 @@ function Explorer({ data }: { data: Dataset }) {
             </div>
           )}
           {tab === "sensors" && <SensorAgreementExplorer sensors={data.sensors} monthly={data.monthly} agreement={data.agreement} />}
+          {tab === "harmonized" && <HarmonizedInstrument data={data} />}
           {tab === "weather" && <EnvironmentalContext weather={data.weather} analysis={analysis} />}
           {tab === "evidence" && (
             <div className="grid gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">

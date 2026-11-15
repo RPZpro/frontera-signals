@@ -21,6 +21,7 @@ const STEPS: { title: string; text: string }[] = [
   { title: "Remove duplicates", text: "Repeated detections are removed and the number removed is reported." },
   { title: "Keep the sensors apart", text: "MODIS and VIIRS detections are never merged into one count." },
   { title: "Summarise by region and month", text: "Counts, summed fire radiative power and the month's rank against its own history. A month without data stays empty; it is never written as zero." },
+  { title: "Combine only as an index", text: "The Harmonized tab puts each sensor on a common scale and averages them. The result is an exploratory index in standard-deviation units, not a detection count, and it has not been validated yet." },
 ];
 
 /** Plain-language method: what each sensor is, what the pipeline does, and what the site does not claim. */
@@ -102,6 +103,7 @@ export function MethodNotes({ metadata, sensors }: { metadata: Metadata; sensors
           ))}
           <li>This site does not identify who or what started a fire, and it makes no claim about illegal activity.</li>
           <li>The seasonal rankings compare relative activity within each series. Physical equivalence between series remains unvalidated.</li>
+          <li>The harmonized index is exploratory. It cannot be converted back into detections, and no fixed conversion factor between MODIS and VIIRS is used or supported.</li>
         </ul>
       </section>
     </div>

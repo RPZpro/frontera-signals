@@ -26,3 +26,9 @@ export const SENSOR_BLURB: Record<Sensor, string> = {
   VIIRS_SNPP: "375 m pixels",
   VIIRS_NOAA20: "375 m pixels",
 };
+
+/**
+ * The harmonized index belongs to neither sensor, so it takes the neutral ink colour and is
+ * told apart by line weight and label, never by borrowing a sensor hue.
+ */
+export const INDEX_COLOR = "#f0f3f7";

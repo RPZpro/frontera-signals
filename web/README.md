@@ -9,7 +9,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm run build      # production build (what Vercel runs)
 npm run lint
-npm test           # environmental anomaly screen tests
+npm test           # anomaly screen and harmonization tests (the latter check Python-computed reference values)
 npm run fixtures   # regenerate the synthetic demo data (deterministic)
 ```
 
@@ -27,6 +27,12 @@ It identifies months in which a series is outside its pipeline-derived seasonal
 active-cell range and at least one quality-approved weather variable is in the
 bottom or top decile of its calendar-month normal. The screen uses the exported
 percentiles and reports incomplete coverage explicitly.
+
+The Harmonized tab combines MODIS and VIIRS into one **exploratory** activity index. Each sensor is put
+on a common unitless scale (log of active 10 km cells, then a per-sensor z-score), the two VIIRS satellites
+count once, and the MODIS and VIIRS scores are averaged. It also flags months where the sensors disagree. Raw
+detections are never merged, and the index cannot be converted into detections. It is labelled
+"not yet validated" until the science lead approves the method; see `docs/HARMONIZATION.md`.
 
 ## Deploy (Vercel)
 

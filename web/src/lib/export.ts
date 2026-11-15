@@ -1,6 +1,7 @@
 import { SENSOR_LABEL, WEATHER_KEYS, type HotspotFeature, type Metadata, type MetricKey, type MonthlyRecord, type Region, type Sensor, type WeatherFile } from "./contract";
 import { MONTHS, MONTHS_LONG, toPeriod, yearsIn } from "./data";
 import { ANOMALY_LIMITS, ANOMALY_METHOD, type EnvironmentalAnalysis } from "./environmentalAnomaly";
+import { HARMONIZATION_VALIDATED, HARMONIZATION_VERSION, LIMITS_Z, type Harmonization } from "./harmonize";
 
 const METRICS: MetricKey[] = ["hotspot_count", "frp_sum_mw", "active_cells", "percentile_vs_reference"];
 
@@ -29,6 +30,30 @@ export function monthlyCsv(metadata: Metadata, records: MonthlyRecord[]): string
       return [metadata.data_status, r.region_id, r.sensor, r.period, r.quality, ...METRICS.map((k) => r[k]),
         r.active_cell_days, r.seasonal?.label, r.seasonal?.n_ref, r.source, r.product_version, file?.source_file, file?.sha256];
     });
+  return toCsv([header, ...rows]);
+}
+
+/**
+ * The harmonized index for one region, month by month. Each sensor's own active cells stay in their own
+ * columns exactly as exported. The derived columns are scores, never detection counts.
+ */
+export function harmonizedCsv(metadata: Metadata, regionId: string, h: Extract<Harmonization, { available: true }>, sensors: Sensor[]): string {
+  const header = [
+    "data_status", "harmonization_status", "method_version", "region_id", "period_utc",
+    "index [score; derived]", "modis_score [score; derived]", "viirs_score [score; derived]",
+    "viirs_minus_modis [score; derived]", `outside_${LIMITS_Z}_sd_limits_of_agreement`,
+    "limit_lower [score]", "limit_upper [score]", "consensus_seasonal_percentile [percentile; derived]",
+    ...sensors.map((s) => `${s}_active_cells [cells; as exported]`),
+    "unavailable_reason",
+  ];
+  const status = HARMONIZATION_VALIDATED ? "validated" : "exploratory_not_validated";
+  const rows = h.months.map((m) => [
+    metadata.data_status, status, HARMONIZATION_VERSION, regionId, m.period,
+    m.index, m.modis, m.viirs, m.difference, m.difference === null ? null : m.outsideLimits,
+    h.agreement.lower, h.agreement.upper, m.consensusPercentile,
+    ...sensors.map((s) => m.readings.find((r) => r.sensor === s)?.cells ?? null),
+    m.missing.join("; "),
+  ]);
   return toCsv([header, ...rows]);
 }
 

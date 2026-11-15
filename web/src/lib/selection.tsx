@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Sensor } from "./contract";
 import { indexMonthly, toPeriod, yearsIn, type Dataset } from "./data";
 
-export const TABS = ["explore", "sensors", "weather", "evidence", "method"] as const;
+export const TABS = ["explore", "sensors", "harmonized", "weather", "evidence", "method"] as const;
 export type Tab = (typeof TABS)[number];
 
 /** The four values every component reacts to, plus the open tab. */

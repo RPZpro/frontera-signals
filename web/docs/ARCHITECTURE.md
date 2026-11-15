@@ -26,5 +26,12 @@ The local layers keep their geographic context when tile requests fail.
 The evidence tab exports selected-month metrics and matching point CSVs, and a
 printable HTML report with the selection, environmental data, provenance and limitations.
 
+`src/lib/harmonize.ts` computes the exploratory harmonized index in the browser from the same monthly
+records. It is a pure module with no React dependency, covered by `tests/harmonize.test.mjs`, which
+matches reference values from an independent Python implementation. The Harmonized tab
+(`HarmonizedInstrument.tsx`) shows the index, the disagreement analysis and a CSV export. The index
+is a derived layer and never replaces the per-sensor series. See `docs/HARMONIZATION.md` for the
+method and the open questions for the science lead.
+
 The synthetic fixtures are available by setting `NEXT_PUBLIC_DATA_BASE=/data/demo`.
 The banner, point popups and exports identify that mode as synthetic.
