@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "tsc --strict --skipLibCheck --target es2020 --module node16 --outDir .next/anomaly-tests src/lib/environmentalAnomaly.ts src/lib/science.ts src/lib/harmonize.ts && node --test tests/environmentalAnomaly.test.mjs tests/harmonize.test.mjs",
     "fixtures": "node scripts/generate-demo-fixtures.mjs",
-    "predev": "node scripts/copy-maplibre-worker.mjs",
-    "prebuild": "node scripts/copy-maplibre-worker.mjs"
+    "predev": "node scripts/stage-science-data.mjs && node scripts/copy-maplibre-worker.mjs",
+    "prebuild": "node scripts/stage-science-data.mjs && node scripts/copy-maplibre-worker.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

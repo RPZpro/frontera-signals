@@ -8,15 +8,27 @@ import type { Sensor } from "./contract";
 export const SENSOR_COLOR: Record<Sensor, string> = {
   MODIS: "#3987b8",
   VIIRS: "#c47b1c",
+  VIIRS_SNPP: "#c47b1c",
+  VIIRS_NOAA20: "#b67bc4",
 };
 
 /** Sequential ramps, one hue per sensor, dark to bright. Index 0 is the lowest non-zero step. */
 export const SENSOR_RAMP: Record<Sensor, string[]> = {
   MODIS: ["#1c3549", "#235474", "#2f78a6", "#56a6d6", "#a9daf5"],
   VIIRS: ["#3f2b16", "#6d4417", "#a26118", "#d98d24", "#f8c96e"],
+  VIIRS_SNPP: ["#3f2b16", "#6d4417", "#a26118", "#d98d24", "#f8c96e"],
+  VIIRS_NOAA20: ["#35243f", "#5b3968", "#875196", "#ba7fc8", "#edbdf7"],
 };
 
 export const SENSOR_BLURB: Record<Sensor, string> = {
   MODIS: "1 km pixels",
   VIIRS: "375 m pixels",
+  VIIRS_SNPP: "375 m pixels",
+  VIIRS_NOAA20: "375 m pixels",
 };
+
+/**
+ * The harmonized index belongs to neither sensor, so it takes the neutral ink colour and is
+ * told apart by line weight and label, never by borrowing a sensor hue.
+ */
+export const INDEX_COLOR = "#f0f3f7";

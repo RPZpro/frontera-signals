@@ -4,13 +4,12 @@ import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { HotspotFeature, Region } from "@/lib/contract";
-import { BASE_STYLE, GROUND, WORKER_URL } from "@/lib/mapStyle";
+import { BASE_STYLE, GROUND, HAS_CARTO_BASEMAP, regionOutline, WORKER_URL } from "@/lib/mapStyle";
 
 maplibregl.setWorkerUrl(WORKER_URL);
 
 /**
- * Full-bleed, non-interactive map behind the cover. It draws the same hot
- * pixels the dashboard holds for one sensor and one month: nothing decorative.
+ * Full-bleed map for the cover's featured series and month.
  */
 export function HeroMap({ regions, features, color }: { regions: Region[]; features: HotspotFeature[]; color: string }) {
   const container = useRef<HTMLDivElement>(null);
@@ -19,10 +18,11 @@ export function HeroMap({ regions, features, color }: { regions: Region[]; featu
     if (!container.current) return;
     let map: maplibregl.Map;
     try {
-      map = new maplibregl.Map({ container: container.current, style: BASE_STYLE, interactive: false, attributionControl: { compact: true } });
+      map = new maplibregl.Map({ container: container.current, style: BASE_STYLE, scrollZoom: false, dragRotate: false, attributionControl: false });
     } catch {
       return; // no WebGL: the cover still works as plain text on the dark ground
     }
+    if (HAS_CARTO_BASEMAP) map.addControl(new maplibregl.AttributionControl({ compact: false }), "top-right");
     const fit = () => {
       const w = Math.min(...regions.map((r) => r.bbox[0]));
       const s = Math.min(...regions.map((r) => r.bbox[1]));
@@ -38,7 +38,9 @@ export function HeroMap({ regions, features, color }: { regions: Region[]; featu
         duration: 0,
       });
     };
-    map.on("load", () => {
+    map.once("style.load", () => {
+      map.addSource("outline", { type: "geojson", data: regionOutline(regions[0]) });
+      map.addLayer({ id: "outline", type: "line", source: "outline", paint: { "line-color": "#8798ad", "line-opacity": 0.7 } });
       map.addSource("hot", { type: "geojson", data: { type: "FeatureCollection", features } as GeoJSON.FeatureCollection });
       map.addLayer({
         id: "glow",
@@ -62,12 +64,12 @@ export function HeroMap({ regions, features, color }: { regions: Region[]; featu
           "circle-stroke-width": 1,
         },
       });
-      map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.55 } });
+      if (HAS_CARTO_BASEMAP) map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.55 } });
       fit();
     });
     map.on("resize", fit);
     return () => map.remove();
   }, [regions, features, color]);
 
-  return <div ref={container} aria-hidden className="h-full w-full" />;
+  return <div ref={container} role="application" aria-label="Map of the featured month" className="h-full w-full" />;
 }

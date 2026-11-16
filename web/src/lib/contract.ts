@@ -1,19 +1,16 @@
-/**
- * TypeScript mirror of the frontend outputs in docs/data_contract.md, section 3
- * (v0.1 draft, owner: Toño).
- *
- * Do not change these shapes on the frontend alone. Fields marked
- * "FRONTEND PROPOSAL" are not in the draft contract yet and are listed as open
- * questions in web/docs/ARCHITECTURE.md.
- */
+/** Dashboard model shared by the v1 science adapter and the synthetic demo. */
 
-export type Sensor = "MODIS" | "VIIRS";
-export const SENSORS: readonly Sensor[] = ["MODIS", "VIIRS"];
+export type Sensor = "MODIS" | "VIIRS" | "VIIRS_SNPP" | "VIIRS_NOAA20";
+export const SENSOR_LABEL: Record<Sensor, string> = {
+  MODIS: "MODIS",
+  VIIRS: "VIIRS",
+  VIIRS_SNPP: "VIIRS Suomi NPP",
+  VIIRS_NOAA20: "VIIRS NOAA-20",
+};
 
 export type Quality = "ok" | "partial_coverage" | "no_data";
 export type MetricKind = "raw" | "derived";
 
-/** FRONTEND PROPOSAL: lets the UI prove whether it is showing real or demo data. */
 export type DataStatus = "synthetic_demo" | "nasa_firms";
 
 export type MetricKey = "hotspot_count" | "active_cells" | "percentile_vs_reference" | "frp_sum_mw";
@@ -41,12 +38,10 @@ export interface Region {
   /** [west, south, east, north] in WGS84 degrees. */
   bbox: [number, number, number, number];
   boundary_note?: string;
+  boundary?: GeoJSON.FeatureCollection;
 }
 
-/**
- * One ingested FIRMS file. Mirrors `ValidationReport.to_dict()` in
- * fire_pipeline/loader.py so the pipeline can write its reports unchanged.
- */
+/** Provenance for one ingested FIRMS file. */
 export interface InputFile {
   source_file: string;
   sha256: string;
@@ -54,12 +49,9 @@ export interface InputFile {
   rows_read: number;
   rows_valid: number;
   /** Rows removed by validation, counted per reason. Never imputed. */
-  dropped: Record<string, number>;
-  duplicates_removed: number;
-  versions: string[];
-  platforms: string[];
-  date_min: string | null;
-  date_max: string | null;
+  dropped?: Record<string, number>;
+  duplicates_removed?: number;
+  year?: number;
 }
 
 export interface Metadata {
@@ -73,7 +65,6 @@ export interface Metadata {
   regions: Region[];
   grid: { description: string; cell_size_deg?: number; cell_size_km?: number };
   reference_period: { start: string; end: string; description: string };
-  /** FRONTEND PROPOSAL: unit and metric_kind per metric (the draft lists them per measurement). */
   metrics: Record<MetricKey, MetricDescriptor>;
   limitations: string[];
 }
@@ -91,7 +82,17 @@ export interface MonthlyRecord {
   active_cells: number | null;
   percentile_vs_reference: number | null;
   frp_sum_mw: number | null;
+  active_cell_days?: number | null;
+  seasonal?: {
+    label: string;
+    activityClass: ActivityClass;
+    n_ref: number;
+    ref_min: number | null;
+    ref_max: number | null;
+  };
 }
+
+export type ActivityClass = "above_range" | "below_range" | "within_range" | "not_evaluated" | "insufficient_reference";
 
 export interface MonthlyFile {
   data_status: DataStatus;
@@ -126,12 +127,13 @@ export interface HotspotCollection {
   features: HotspotFeature[];
 }
 
-/** NASA POWER monthly means. Field names are a FRONTEND PROPOSAL (see ARCHITECTURE.md). */
+/** NASA POWER monthly means. */
 export type WeatherKey = "t2m_c" | "rh2m_pct" | "prectotcorr_mm_day" | "ws10m_m_s";
+export const WEATHER_KEYS: readonly WeatherKey[] = ["t2m_c", "rh2m_pct", "prectotcorr_mm_day", "ws10m_m_s"];
 
 export interface WeatherRecord {
   region_id: string;
-  /** UTC month, "YYYY-MM". */
+  /** Local solar time month, "YYYY-MM" for the POWER export. */
   period: string;
   source: string;
   quality: Quality;
@@ -139,6 +141,12 @@ export interface WeatherRecord {
   rh2m_pct: number | null;
   prectotcorr_mm_day: number | null;
   ws10m_m_s: number | null;
+  details?: Partial<Record<WeatherKey, {
+    quality: Quality | "qc_excluded";
+    anomaly: number | null;
+    percentile: number | null;
+    normal_period: string;
+  }>>;
 }
 
 /** weather.json is optional in the contract: the app must work without it. */

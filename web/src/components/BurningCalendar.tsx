@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
-import type { MonthlyRecord } from "@/lib/contract";
+import { SENSOR_LABEL, type MonthlyRecord } from "@/lib/contract";
 import { countBreaks, countStep, fmtInt, indexMonthly, MONTHS, MONTHS_LONG, toPeriod, yearsIn } from "@/lib/data";
 import { useSelection } from "@/lib/selection";
 import { SENSOR_RAMP } from "@/lib/theme";
@@ -54,7 +54,7 @@ export function BurningCalendar({ monthly }: { monthly: MonthlyRecord[] }) {
     <section aria-labelledby="calendar-title" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
         <h2 id="calendar-title" className="font-display text-xl font-semibold">
-          {sensor} detections by month
+          {SENSOR_LABEL[sensor]} detections by month
         </h2>
         <p className="tabular text-sm text-soft" aria-live="polite">
           <span className="font-bold text-ink">
@@ -67,7 +67,7 @@ export function BurningCalendar({ monthly }: { monthly: MonthlyRecord[] }) {
       <div
         ref={gridRef}
         role="grid"
-        aria-label={`${sensor} detections per month. Arrow keys move between months, Enter selects.`}
+        aria-label={`${SENSOR_LABEL[sensor]} detections per month. Arrow keys move between months, Enter selects.`}
         className="grid gap-[3px]"
         style={{ gridTemplateColumns: "2.75rem repeat(12, minmax(0, 1fr))" }}
         onMouseLeave={() => setHover(null)}
@@ -145,7 +145,7 @@ export function BurningCalendar({ monthly }: { monthly: MonthlyRecord[] }) {
         </span>
       </div>
       <p className="max-w-[68ch] text-sm text-muted">
-        Colour steps are set from this region&rsquo;s {sensor} months only. MODIS and VIIRS use different scales and
+        Colour steps are set from this region&rsquo;s {SENSOR_LABEL[sensor]} months only. MODIS and VIIRS use different scales and
         different colours because their counts are not comparable.
       </p>
     </section>

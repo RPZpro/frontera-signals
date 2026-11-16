@@ -1,6 +1,6 @@
 "use client";
 
-import type { Metadata, MetricKey, MonthlyRecord } from "@/lib/contract";
+import { SENSOR_LABEL, type Metadata, type MetricKey, type MonthlyRecord } from "@/lib/contract";
 import { fmtInt, MONTHS_LONG } from "@/lib/data";
 import { useSelection } from "@/lib/selection";
 
@@ -8,7 +8,7 @@ const ORDER: MetricKey[] = ["hotspot_count", "frp_sum_mw", "active_cells", "perc
 
 function format(key: MetricKey, value: number): string {
   if (key === "frp_sum_mw") return value.toLocaleString("en-US", { maximumFractionDigits: 1 });
-  if (key === "percentile_vs_reference") return `${Math.round(value)}`;
+  if (key === "percentile_vs_reference") return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
   return fmtInt(value);
 }
 
@@ -26,7 +26,7 @@ export function MonthReadout({ metadata, record }: { metadata: Metadata; record:
   return (
     <section aria-labelledby="readout-title" className="rounded-md border border-line bg-panel p-5">
       <h2 id="readout-title" className="font-display text-xl font-semibold">
-        {sensor} in {MONTHS_LONG[month - 1]} {year}
+        {SENSOR_LABEL[sensor]} in {MONTHS_LONG[month - 1]} {year}
       </h2>
       <p className="mt-1 text-sm text-soft">{quality}</p>
 
@@ -68,7 +68,10 @@ export function MonthReadout({ metadata, record }: { metadata: Metadata; record:
           {coverage.period_min} to {coverage.period_max} (UTC months)
         </dd>
         <dt className="text-muted">Reference</dt>
-        <dd className="text-soft">{metadata.reference_period.description}</dd>
+        <dd className="text-soft">
+          {metadata.reference_period.description}
+          {record?.seasonal && ` ${record.seasonal.label}. ${record.seasonal.n_ref} comparison years.`}
+        </dd>
       </dl>
     </section>
   );

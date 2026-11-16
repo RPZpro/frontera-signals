@@ -1,6 +1,6 @@
 "use client";
 
-import { SENSORS } from "@/lib/contract";
+import { SENSOR_LABEL, type Sensor } from "@/lib/contract";
 import { useSelection } from "@/lib/selection";
 import { SENSOR_BLURB, SENSOR_COLOR } from "@/lib/theme";
 
@@ -8,13 +8,13 @@ import { SENSOR_BLURB, SENSOR_COLOR } from "@/lib/theme";
  * One sensor at a time, on purpose: raw MODIS and VIIRS detections are not
  * comparable, so there is no "both" or "combined" option here.
  */
-export function SensorSelector() {
+export function SensorSelector({ sensors }: { sensors: Sensor[] }) {
   const { sensor, setSensor } = useSelection();
   return (
     <fieldset className="flex flex-col gap-1.5">
-      <legend className="mb-1.5 text-sm text-muted">Sensor</legend>
-      <div className="flex gap-2">
-        {SENSORS.map((s) => {
+      <legend className="mb-1.5 text-sm text-muted">Satellite series</legend>
+      <div className="flex flex-wrap gap-2">
+        {sensors.map((s) => {
           const active = s === sensor;
           return (
             <label
@@ -32,7 +32,7 @@ export function SensorSelector() {
                 className="sr-only"
               />
               <span aria-hidden className="size-3 rounded-full" style={{ background: SENSOR_COLOR[s] }} />
-              <span className="font-bold">{s}</span>
+              <span className="font-bold">{SENSOR_LABEL[s]}</span>
               <span className="hidden text-sm text-muted sm:inline">{SENSOR_BLURB[s]}</span>
             </label>
           );

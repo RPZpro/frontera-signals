@@ -1,10 +1,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { SENSORS, type Sensor } from "./contract";
+import type { Sensor } from "./contract";
 import { indexMonthly, toPeriod, yearsIn, type Dataset } from "./data";
 
-export const TABS = ["explore", "sensors", "weather", "evidence", "method"] as const;
+export const TABS = ["explore", "sensors", "harmonized", "weather", "evidence", "method"] as const;
 export type Tab = (typeof TABS)[number];
 
 /** The four values every component reacts to, plus the open tab. */
@@ -29,7 +29,7 @@ const SelectionContext = createContext<SelectionContextValue | null>(null);
 
 function defaultSelection(data: Dataset): Selection {
   const regionId = data.metadata.regions[0].region_id;
-  const sensor: Sensor = "VIIRS";
+  const sensor = data.sensors.find((s) => s !== "MODIS") ?? data.sensors[0];
   const years = yearsIn(data.monthly);
   const year = years[years.length - 1];
   // open on the busiest month of the latest year so the map is not empty
@@ -47,14 +47,15 @@ function defaultSelection(data: Dataset): Selection {
 function fromUrl(data: Dataset, fallback: Selection): Selection {
   const q = new URLSearchParams(window.location.search);
   const region = q.get("region");
-  const sensor = q.get("sensor");
+  const requested = q.get("sensor");
+  const sensor = requested === "VIIRS" && !data.sensors.includes("VIIRS") ? "VIIRS_SNPP" : requested;
   const [y, m] = (q.get("period") ?? "").split("-").map(Number);
   const years = yearsIn(data.monthly);
   return {
     regionId: data.metadata.regions.some((r) => r.region_id === region) ? (region as string) : fallback.regionId,
-    sensor: SENSORS.includes(sensor as Sensor) ? (sensor as Sensor) : fallback.sensor,
+    sensor: data.sensors.includes(sensor as Sensor) ? (sensor as Sensor) : fallback.sensor,
     year: years.includes(y) ? y : fallback.year,
-    month: years.includes(y) && m >= 1 && m <= 12 ? m : fallback.month,
+    month: years.includes(y) && Number.isInteger(m) && m >= 1 && m <= 12 ? m : fallback.month,
     tab: TABS.includes(q.get("tab") as Tab) ? (q.get("tab") as Tab) : fallback.tab,
   };
 }

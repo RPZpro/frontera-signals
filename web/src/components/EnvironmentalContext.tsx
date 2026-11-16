@@ -1,11 +1,11 @@
 "use client";
 
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { WeatherFile, WeatherKey } from "@/lib/contract";
-import { MONTHS, MONTHS_LONG, toPeriod } from "@/lib/data";
+import { SENSOR_LABEL, WEATHER_KEYS, type WeatherFile } from "@/lib/contract";
+import { fmtInt, MONTHS, MONTHS_LONG, toPeriod } from "@/lib/data";
+import { ANOMALY_LIMITS, ANOMALY_METHOD, type EnvironmentalAnalysis } from "@/lib/environmentalAnomaly";
 import { useSelection } from "@/lib/selection";
 
-const KEYS: WeatherKey[] = ["t2m_c", "rh2m_pct", "prectotcorr_mm_day", "ws10m_m_s"];
 const INK = "#b6c3d3";
 
 interface Row {
@@ -27,8 +27,52 @@ function TooltipBody({ active, payload, unit, year }: { active?: boolean; payloa
   );
 }
 
-/** Monthly weather for the selected region and year. Context only: it is not used to explain detections. */
-export function EnvironmentalContext({ weather }: { weather: WeatherFile | null }) {
+function AnomalySummary({ analysis }: { analysis: EnvironmentalAnalysis }) {
+  const { sensor, year, month } = useSelection();
+  return (
+    <section aria-labelledby="anomaly-title" className="flex flex-col gap-3 rounded-md border border-line bg-panel p-4 sm:p-5">
+      <h3 id="anomaly-title" className="font-display text-lg font-semibold">
+        Environmental anomaly screen · {MONTHS_LONG[month - 1]} {year}
+      </h3>
+      <p className="font-semibold">{SENSOR_LABEL[sensor]} · {analysis.summary}</p>
+      {analysis.available && (
+        <>
+          {analysis.incomplete && <p className="text-sm font-medium text-soft">Incomplete assessment · {analysis.weatherCount} of {WEATHER_KEYS.length} weather variables evaluated. A thermal classification is required for the selected series.</p>}
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <h4 className="mb-1 font-semibold">Thermal observations and seasonal ranks</h4>
+              <ul className="space-y-2 text-sm text-soft">
+                {analysis.thermal.map(({ series, record, activityClass }) => (
+                  <li key={series}>
+                    <strong>{SENSOR_LABEL[series]}</strong>{" · "}
+                    {record?.hotspot_count == null ? "Detections unavailable" : `${fmtInt(record.hotspot_count)} detections${record.quality === "partial_coverage" ? " (partial coverage)" : ""}`}
+                    {activityClass && record?.seasonal ? ` · active-cell percentile ${record.percentile_vs_reference} · ${record.seasonal.label} (${record.seasonal.n_ref} comparison years)` : " · Seasonal classification unavailable"}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-sm text-muted">{analysis.comparison}</p>
+            </div>
+            <div>
+              <h4 className="mb-1 font-semibold">Weather percentiles by variable</h4>
+              <ul className="space-y-2 text-sm text-soft">
+                {analysis.weatherIndicators.map((item) => (
+                  <li key={item.key}>
+                    <strong>{item.label}</strong> · {item.interpretation}
+                    {item.percentile !== null && ` · percentile ${item.percentile} (${item.baseline} normal)`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className="text-sm text-muted">{ANOMALY_METHOD} {ANOMALY_LIMITS}</p>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Monthly weather for the selected region and year. */
+export function EnvironmentalContext({ weather, analysis }: { weather: WeatherFile | null; analysis: EnvironmentalAnalysis }) {
   const { regionId, year, month } = useSelection();
 
   if (!weather) {
@@ -37,10 +81,8 @@ export function EnvironmentalContext({ weather }: { weather: WeatherFile | null 
         <h2 id="env-title" className="font-display text-xl font-semibold">
           Weather in the region
         </h2>
-        <p className="max-w-[68ch] rounded-md border border-line bg-panel p-4 text-sm text-soft">
-          Weather data is not available for this dataset. The pipeline did not publish weather.json, so nothing is
-          shown here. The rest of the page is unaffected.
-        </p>
+        <p className="text-sm text-soft">Weather measurements are unavailable.</p>
+        <AnomalySummary analysis={analysis} />
       </section>
     );
   }
@@ -56,22 +98,23 @@ export function EnvironmentalContext({ weather }: { weather: WeatherFile | null 
           Weather in the region, {year}
         </h2>
         <p className="mt-1 max-w-[72ch] text-sm text-soft">
-          Monthly means for context. Weather here does not explain or predict any detection, and nothing on this page
-          tests that link.{synthetic && " These weather values are synthetic, not NASA POWER data."}
+          Regional monthly means.{synthetic && " These weather values are synthetic demonstration data."}
         </p>
       </div>
+      <AnomalySummary analysis={analysis} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {KEYS.map((key) => {
+        {WEATHER_KEYS.map((key) => {
           const v = weather.variables[key];
           const rows: Row[] = MONTHS.map((label, i) => ({ label, month: i + 1, value: byPeriod.get(toPeriod(year, i + 1))?.[key] ?? null }));
           const now = selectedRec?.[key] ?? null;
+          const detail = selectedRec?.details?.[key];
           return (
             <div key={key} className="flex flex-col gap-1 rounded-md border border-line bg-panel p-4">
               <h3 className="text-sm text-muted">{v.label}</h3>
               <p className="tabular font-display text-2xl font-semibold">
                 {now === null ? (
-                  <span className="text-base font-normal text-muted">Not available</span>
+                  <span className="text-base font-normal text-muted">{detail?.quality === "qc_excluded" ? "Excluded by quality control" : "Not available"}</span>
                 ) : (
                   <>
                     {now}
@@ -82,6 +125,9 @@ export function EnvironmentalContext({ weather }: { weather: WeatherFile | null 
               <p className="text-xs text-muted">
                 {MONTHS_LONG[month - 1]} {year}, monthly mean
               </p>
+              {detail?.anomaly != null && (
+                <p className="text-xs text-muted">{detail.anomaly > 0 ? "+" : ""}{detail.anomaly} {v.unit} from the {detail.normal_period} normal</p>
+              )}
               <div className="mt-2 h-32" role="img" aria-label={`${v.label} by month in ${year}, in ${v.unit}: ${rows.map((r) => `${r.label} ${r.value ?? "no data"}`).join(", ")}`}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={rows} margin={{ top: 6, right: 8, bottom: 0, left: -22 }}>

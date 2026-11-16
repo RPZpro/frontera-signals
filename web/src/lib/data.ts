@@ -1,12 +1,13 @@
 import type { HotspotCollection, Metadata, MonthlyFile, MonthlyRecord, Sensor, WeatherFile } from "./contract";
+import { adaptHotspots, adaptMetadata, adaptMonthly, adaptWeather, type ScienceAgreement, type ScienceHotspots, type ScienceMetadata, type ScienceMonthly, type ScienceWeather } from "./science";
 
-/** Folder under /public that holds the pipeline outputs. Swap to the real export when Toño publishes it. */
-export const DATA_BASE = process.env.NEXT_PUBLIC_DATA_BASE ?? "/data/demo";
+export const DATA_BASE = process.env.NEXT_PUBLIC_DATA_BASE ?? "/data/firms";
 
 export interface Dataset {
   metadata: Metadata;
   monthly: MonthlyRecord[];
-  hotspots: HotspotCollection;
+  sensors: Sensor[];
+  agreement: ScienceAgreement | null;
   /** Optional in the contract. null when the pipeline did not publish weather.json. */
   weather: WeatherFile | null;
 }
@@ -18,14 +19,55 @@ async function getJson<T>(file: string): Promise<T> {
 }
 
 export async function loadDataset(): Promise<Dataset> {
-  const [metadata, monthlyFile, hotspots] = await Promise.all([
-    getJson<Metadata>("metadata.json"),
-    getJson<MonthlyFile>("monthly.json"),
-    getJson<HotspotCollection>("hotspots.geojson"),
+  const raw = await getJson<Metadata | ScienceMetadata>("metadata.json");
+  if ("data_status" in raw && raw.data_status === "synthetic_demo") {
+    const [monthly, weather] = await Promise.all([
+      getJson<MonthlyFile>("monthly.json"),
+      getJson<WeatherFile>("weather.json").catch(() => null),
+    ]);
+    if (monthly.data_status !== "synthetic_demo") throw new Error("Unexpected demo data status.");
+    return { metadata: raw, monthly: monthly.records, sensors: ["MODIS", "VIIRS"], weather, agreement: null };
+  }
+  if (!("schema_version" in raw) || raw.schema_version !== "1.0.0") throw new Error("Unsupported data contract.");
+  const [monthly, weather, boundary, agreement] = await Promise.all([
+    getJson<ScienceMonthly>("monthly.json"),
+    getJson<ScienceWeather>("weather.json").then(adaptWeather).catch(() => null),
+    getJson<GeoJSON.FeatureCollection>("mx_bcn_adm1.geojson"),
+    getJson<ScienceAgreement>("agreement.json").catch(() => null),
   ]);
-  // weather.json is optional: a missing or broken file must not take the app down.
-  const weather = await getJson<WeatherFile>("weather.json").catch(() => null);
-  return { metadata, monthly: monthlyFile.records, hotspots, weather };
+  const reference = monthly.records[0]?.metrics.active_cells.seasonal.ref_period;
+  if (!reference) throw new Error("The FIRMS monthly export has no seasonal reference period.");
+  return {
+    metadata: adaptMetadata(raw, boundary, reference), monthly: adaptMonthly(monthly, raw),
+    sensors: Object.keys(raw.series) as Sensor[], weather, agreement,
+  };
+}
+
+const hotspotRequests = new Map<string, Promise<HotspotCollection>>();
+
+export function loadHotspots(metadata: Metadata, year: number) {
+  const demo = metadata.data_status === "synthetic_demo";
+  const file = demo ? "hotspots.geojson" : `hotspots_${year}.geojson`;
+  const existing = hotspotRequests.get(file);
+  if (existing) return existing;
+  const request = (demo
+    ? getJson<HotspotCollection>(file).then((data) => {
+        if (data.data_status !== "synthetic_demo") throw new Error("Unexpected demo hotspot data status.");
+        return data;
+      })
+    : getJson<ScienceHotspots>(file).then((data) => adaptHotspots(data, metadata, year))
+  ).catch((error: unknown) => {
+    hotspotRequests.delete(file);
+    throw error;
+  });
+  hotspotRequests.set(file, request);
+  return request;
+}
+
+export function monthFeatures(hotspots: HotspotCollection, regionId: string, sensor: Sensor, period: string) {
+  return hotspots.features.filter(({ properties: p }) =>
+    p.region_id === regionId && p.sensor === sensor && p.acq_datetime_utc.startsWith(period),
+  );
 }
 
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
