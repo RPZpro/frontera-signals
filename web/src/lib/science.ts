@@ -1,4 +1,5 @@
-import type { ActivityClass, HotspotCollection, HotspotFeature, HotspotProperties, Metadata, MetricDescriptor, MonthlyRecord, Quality, Region, Sensor, WeatherFile, WeatherRecord } from "./contract";
+﻿import type { ActivityClass, HotspotCollection, HotspotFeature, HotspotProperties, Metadata, MetricDescriptor, MonthlyRecord, Quality, Region, Sensor, WeatherFile, WeatherRecord } from "./contract";
+import { BC_SUBREGIONS } from "./municipalities";
 
 type Series = Exclude<Sensor, "VIIRS">;
 type ScienceMetric = "hotspot_count" | "frp_sum_mw" | "active_cells" | "active_cell_days";
@@ -101,6 +102,16 @@ export function adaptMetadata(raw: ScienceMetadata, boundary: GeoJSON.FeatureCol
   };
   const [start, end] = reference.split("-");
   const grid = raw.methods.grid;
+  const baseRegions: Region[] = raw.regions.map((r) => ({
+    ...r,
+    name: r.region_id === "MX-BCN" ? "Baja California (All State)" : r.name,
+    boundary_note: r.boundary_source,
+    boundary: r.region_id === "MX-BCN" ? boundary : undefined,
+  }));
+  const regions: Region[] = raw.regions.some((r) => r.region_id === "MX-BCN")
+    ? [...baseRegions, ...BC_SUBREGIONS]
+    : baseRegions;
+
   return {
     contract_version: raw.schema_version,
     data_status: "nasa_firms",
@@ -117,9 +128,9 @@ export function adaptMetadata(raw: ScienceMetadata, boundary: GeoJSON.FeatureCol
       period_min: info.coverage[0].slice(0, 7),
       period_max: info.coverage[1].slice(0, 7),
     }])) as Metadata["sensors"],
-    regions: raw.regions.map((r) => ({ ...r, boundary_note: r.boundary_source, boundary: r.region_id === "MX-BCN" ? boundary : undefined })),
+    regions,
     grid: { description: `${grid.cell_size_m / 1000} km equal-area grid, ${grid.crs_name} (${grid.crs})` },
-    reference_period: { start, end, description: `The same calendar month in other years of ${start}–${end}, within the same series.` },
+    reference_period: { start, end, description: `The same calendar month in other years of ${start}-${end}, within the same series.` },
     metrics: {
       hotspot_count: metric("hotspot_count"),
       frp_sum_mw: metric("frp_sum_mw"),
@@ -134,7 +145,7 @@ export function adaptMetadata(raw: ScienceMetadata, boundary: GeoJSON.FeatureCol
 }
 
 export function adaptMonthly(raw: ScienceMonthly, metadata: ScienceMetadata): MonthlyRecord[] {
-  return raw.records.map(({ series, metrics, region_id, period, source, product_version, quality }) => {
+  const base: MonthlyRecord[] = raw.records.map(({ series, metrics, region_id, period, source, product_version, quality }) => {
     const seasonal = metrics.active_cells.seasonal;
     return {
       region_id, period, source, product_version, quality, sensor: series,
@@ -152,6 +163,15 @@ export function adaptMonthly(raw: ScienceMonthly, metadata: ScienceMetadata): Mo
       },
     };
   });
+  const expanded = [...base];
+  for (const r of base) {
+    if (r.region_id === "MX-BCN") {
+      for (const sub of BC_SUBREGIONS) {
+        expanded.push({ ...r, region_id: sub.region_id });
+      }
+    }
+  }
+  return expanded;
 }
 
 export function adaptHotspots(raw: ScienceHotspots, metadata: Metadata, year: number): HotspotCollection {
@@ -186,8 +206,17 @@ export function adaptWeather(raw: ScienceWeather): WeatherFile {
     record.details![key] = { quality: r.quality, anomaly: r.anomaly, percentile: r.anomaly_pct, normal_period: r.normal_period };
     records.set(id, record);
   }
+  const baseRecords = [...records.values()];
+  const expanded = [...baseRecords];
+  for (const r of baseRecords) {
+    if (r.region_id === "MX-BCN") {
+      for (const sub of BC_SUBREGIONS) {
+        expanded.push({ ...r, region_id: sub.region_id });
+      }
+    }
+  }
   return {
-    data_status: "nasa_firms", records: [...records.values()], variables,
+    data_status: "nasa_firms", records: expanded, variables,
     grid_resolution_note: "Area-weighted MERRA-2 regional means (0.5° × 0.625°, local solar time).",
   };
 }

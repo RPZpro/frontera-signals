@@ -1,3 +1,4 @@
+﻿import { findSubRegion, pointInBbox } from "./municipalities";
 import type { HotspotCollection, Metadata, MonthlyFile, MonthlyRecord, Sensor, WeatherFile } from "./contract";
 import { adaptHotspots, adaptMetadata, adaptMonthly, adaptWeather, type ScienceAgreement, type ScienceHotspots, type ScienceMetadata, type ScienceMonthly, type ScienceWeather } from "./science";
 
@@ -65,9 +66,13 @@ export function loadHotspots(metadata: Metadata, year: number) {
 }
 
 export function monthFeatures(hotspots: HotspotCollection, regionId: string, sensor: Sensor, period: string) {
-  return hotspots.features.filter(({ properties: p }) =>
-    p.region_id === regionId && p.sensor === sensor && p.acq_datetime_utc.startsWith(period),
-  );
+  const sub = findSubRegion(regionId);
+  return hotspots.features.filter((f) => {
+    const p = f.properties;
+    if (p.sensor !== sensor || !p.acq_datetime_utc.startsWith(period)) return false;
+    if (sub) return p.region_id === sub.parentId && pointInBbox(f.geometry.coordinates, sub.bbox);
+    return p.region_id === regionId;
+  });
 }
 
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
@@ -118,3 +123,4 @@ export function countStep(count: number, breaks: number[]): number {
 }
 
 export const fmtInt = (n: number) => n.toLocaleString("en-US");
+

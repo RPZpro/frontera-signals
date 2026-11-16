@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
-import type { GeoJSONSource } from "maplibre-gl";
+import type { GeoJSONSource, RasterTileSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { SENSOR_LABEL, type HotspotFeature, type HotspotProperties, type MonthlyRecord, type Region } from "@/lib/contract";
 import { fmtInt, MONTHS_LONG } from "@/lib/data";
-import { BASE_STYLE, GROUND, HAS_CARTO_BASEMAP, regionOutline, WORKER_URL } from "@/lib/mapStyle";
+import { BASE_STYLE, GROUND, MAP_MODES, type MapModeId, regionOutline, WORKER_URL } from "@/lib/mapStyle";
 import { useSelection } from "@/lib/selection";
 import { SENSOR_COLOR } from "@/lib/theme";
 
@@ -18,7 +18,6 @@ interface Props {
   regions: Region[];
   features: HotspotFeature[] | null;
   pointsFailed: boolean;
-  /** Monthly record for the current selection, used to tell "zero" from "no data". */
   record: MonthlyRecord | undefined;
   synthetic: boolean;
 }
@@ -31,6 +30,7 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
   const [basemapFailed, setBasemapFailed] = useState(false);
+  const [mapMode, setMapMode] = useState<MapModeId>("dark");
 
   const region = regions.find((r) => r.region_id === regionId) ?? regions[0];
 
@@ -48,7 +48,7 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
         style: BASE_STYLE,
         center: [-116.3, 32.2],
         zoom: 7,
-        attributionControl: HAS_CARTO_BASEMAP ? { compact: false } : false,
+        attributionControl: { compact: true },
       });
     } catch (err) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- report a WebGL start-up failure
@@ -69,22 +69,21 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
         id: "region-outline",
         type: "line",
         source: "region",
-        paint: { "line-color": "#b6c3d3", "line-width": 1, "line-dasharray": [3, 3], "line-opacity": 0.7 },
+        paint: { "line-color": "#e2e8f0", "line-width": 1.75, "line-dasharray": [4, 3], "line-opacity": 0.85 },
       });
       map.addLayer({
         id: "hotspots",
         type: "circle",
         source: "hotspots",
         paint: {
-          // area grows with fire radiative power; the ring separates overlapping pixels
-          "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "frp_mw"]], 0, 3, 10, 9],
+          "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "frp_mw"]], 0, 3.5, 10, 10],
           "circle-color": ["match", ["get", "sensor"], "MODIS", SENSOR_COLOR.MODIS, "VIIRS_NOAA20", SENSOR_COLOR.VIIRS_NOAA20, SENSOR_COLOR.VIIRS],
-          "circle-opacity": 0.85,
+          "circle-opacity": 0.88,
           "circle-stroke-color": GROUND,
           "circle-stroke-width": 1.5,
         },
       });
-      if (HAS_CARTO_BASEMAP) map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.8 } });
+      map.addLayer({ id: "labels", type: "raster", source: "labels", paint: { "raster-opacity": 0.9 } });
 
       map.on("mouseenter", "hotspots", () => (map.getCanvas().style.cursor = "pointer"));
       map.on("mouseleave", "hotspots", () => (map.getCanvas().style.cursor = ""));
@@ -117,6 +116,23 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
+    const mode = MAP_MODES.find((m) => m.id === mapMode) ?? MAP_MODES[0];
+    const baseSrc = map.getSource("basemap") as RasterTileSource | undefined;
+    const labelSrc = map.getSource("labels") as RasterTileSource | undefined;
+    if (baseSrc) baseSrc.setTiles(mode.baseTiles);
+    if (labelSrc) {
+      if (mode.labelTiles) {
+        labelSrc.setTiles(mode.labelTiles);
+        map.setLayoutProperty("labels", "visibility", "visible");
+      } else {
+        map.setLayoutProperty("labels", "visibility", "none");
+      }
+    }
+  }, [ready, mapMode]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
     (map.getSource("hotspots") as GeoJSONSource).setData(visible);
   }, [ready, visible]);
 
@@ -133,7 +149,7 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
   const monthLabel = `${MONTHS_LONG[month - 1]} ${year}`;
   const status = noData
     ? `No ${label} data for ${monthLabel}.`
-    : !features ? (pointsFailed ? "Hotspot locations unavailable" : "Loading hotspot locations…")
+    : !features ? (pointsFailed ? "Hotspot locations unavailable" : "Loading hotspot locations...")
       : features.length === 0 ? `${label} recorded no detections in ${monthLabel}.` : null;
 
   return (
@@ -144,14 +160,39 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
         </h2>
         <p className="tabular flex items-center gap-2 text-sm text-soft">
           <span aria-hidden className="size-3 rounded-full" style={{ background: SENSOR_COLOR[sensor] }} />
-          {noData ? `${label}: no data` : `${fmtInt(record.hotspot_count!)} ${label} hot pixels`}
+          {noData ? `${label}: no data` : `${fmtInt(features ? features.length : record.hotspot_count!)} ${label} hot pixels`}
         </p>
       </div>
 
       <div className="relative h-[22rem] overflow-hidden rounded-md border border-line bg-panel sm:h-[28rem] lg:h-[34rem]">
         <div ref={container} className="h-full w-full" role="application" aria-label={`Map of ${sensor} hot pixels in ${region.name}, ${monthLabel}`} />
+
+        {ready && (
+          <div
+            role="group"
+            aria-label="Map style"
+            className="absolute bottom-8 right-2 z-10 flex overflow-hidden rounded-md border border-line bg-ground/90 shadow-md backdrop-blur-sm"
+          >
+            {MAP_MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                aria-pressed={mapMode === m.id}
+                onClick={() => setMapMode(m.id)}
+                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                  mapMode === m.id
+                    ? "bg-ink text-ground"
+                    : "text-soft hover:bg-raised hover:text-ink"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {!ready && !failed && (
-          <p className="absolute inset-0 grid place-items-center text-sm text-muted">Loading map…</p>
+          <p className="absolute inset-0 grid place-items-center text-sm text-muted">Loading map...</p>
         )}
         {failed && (
           <p role="alert" className="absolute inset-0 grid place-items-center p-6 text-center text-sm text-soft">
@@ -171,8 +212,8 @@ export function FireMap({ regions, features, pointsFailed, record, synthetic }: 
         Each dot is one hot pixel, sized by fire radiative power. A hot pixel is not an independent fire, and it says
         nothing about cause. Dates are UTC. {region.boundary_note ?? "The dashed box marks the approximate region."}
         {basemapFailed && " Some basemap tiles are unavailable. The regional outline and hotspot layers are local."}
-        {!HAS_CARTO_BASEMAP && " The map uses the local regional outline and hotspot layers."}
       </p>
     </section>
   );
 }
+
